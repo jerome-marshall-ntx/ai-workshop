@@ -1,0 +1,172 @@
+{
+  "colors": [
+    {
+      "name": "primary-500",
+      "value": "#0055FF",
+      "category": "Brand",
+      "description": "Primary brand color"
+    },
+    {
+      "name": "primary-600",
+      "value": "#0044CC",
+      "category": "Brand",
+      "description": "Primary brand color - darker"
+    },
+    {
+      "name": "primary-400",
+      "value": "#3377FF",
+      "category": "Brand",
+      "description": "Primary brand color - lighter"
+    },
+    {
+      "name": "neutral-100",
+      "value": "#F5F5F5",
+      "category": "Neutral",
+      "description": "Lightest neutral"
+    },
+    {
+      "name": "neutral-200",
+      "value": "#E5E5E5",
+      "category": "Neutral",
+      "description": "Light neutral"
+    },
+    {
+      "name": "neutral-500",
+      "value": "#999999",
+      "category": "Neutral",
+      "description": "Medium neutral"
+    },
+    {
+      "name": "neutral-900",
+      "value": "#1A1A1A",
+      "category": "Neutral",
+      "description": "Darkest neutral"
+    },
+    {
+      "name": "success-500",
+      "value": "#00C853",
+      "category": "Semantic",
+      "description": "Success state color"
+    },
+    {
+      "name": "error-500",
+      "value": "#FF1744",
+      "category": "Semantic",
+      "description": "Error state color"
+    },
+    {
+      "name": "warning-500",
+      "value": "#FF9800",
+      "category": "Semantic",
+      "description": "Warning state color"
+    }
+  ],
+  "spacing": [
+    {
+      "name": "space-1",
+      "value": "4px",
+      "multiplier": "0.5x",
+      "description": "Smallest spacing unit"
+    },
+    {
+      "name": "space-2",
+      "value": "8px",
+      "multiplier": "1x",
+      "description": "Base spacing unit"
+    },
+    {
+      "name": "space-3",
+      "value": "12px",
+      "multiplier": "1.5x",
+      "description": "Small spacing"
+    },
+    {
+      "name": "space-4",
+      "value": "16px",
+      "multiplier": "2x",
+      "description": "Medium spacing"
+    },
+    {
+      "name": "space-6",
+      "value": "24px",
+      "multiplier": "3x",
+      "description": "Large spacing"
+    },
+    {
+      "name": "space-8",
+      "value": "32px",
+      "multiplier": "4x",
+      "description": "Extra large spacing"
+    },
+    {
+      "name": "space-12",
+      "value": "48px",
+      "multiplier": "6x",
+      "description": "Section spacing"
+    },
+    {
+      "name": "space-16",
+      "value": "64px",
+      "multiplier": "8x",
+      "description": "Maximum spacing"
+    }
+  ],
+  "typography": [
+    {
+      "name": "heading-xl",
+      "value": "32px / 40px",
+      "font": "Inter Bold",
+      "preview": "Heading XL",
+      "description": "Extra large heading"
+    },
+    {
+      "name": "heading-lg",
+      "value": "24px / 32px",
+      "font": "Inter Bold",
+      "preview": "Heading LG",
+      "description": "Large heading"
+    },
+    {
+      "name": "heading-md",
+      "value": "20px / 28px",
+      "font": "Inter SemiBold",
+      "preview": "Heading MD",
+      "description": "Medium heading"
+    },
+    {
+      "name": "heading-sm",
+      "value": "18px / 24px",
+      "font": "Inter SemiBold",
+      "preview": "Heading SM",
+      "description": "Small heading"
+    },
+    {
+      "name": "body-lg",
+      "value": "18px / 28px",
+      "font": "Inter Regular",
+      "preview": "Body Large Text",
+      "description": "Large body text"
+    },
+    {
+      "name": "body-md",
+      "value": "16px / 24px",
+      "font": "Inter Regular",
+      "preview": "Body Medium Text",
+      "description": "Medium body text"
+    },
+    {
+      "name": "body-sm",
+      "value": "14px / 20px",
+      "font": "Inter Regular",
+      "preview": "Body Small Text",
+      "description": "Small body text"
+    },
+    {
+      "name": "caption",
+      "value": "12px / 16px",
+      "font": "Inter Regular",
+      "preview": "Caption Text",
+      "description": "Caption text"
+    }
+  ]
+}

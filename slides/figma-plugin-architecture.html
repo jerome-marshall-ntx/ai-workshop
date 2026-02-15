@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Figma Plugin Architecture</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-primary: #0d0d0d;
+        --bg-secondary: #1a1a1a;
+        --bg-tertiary: #242424;
+        --accent-figma: #a259ff;
+        --accent-blue: #1abcfe;
+        --accent-green: #0acf83;
+        --accent-orange: #ff7262;
+        --accent-yellow: #f24e1e;
+        --text-primary: #ffffff;
+        --text-secondary: #a0a0a0;
+        --text-muted: #666666;
+        --border-color: #333333;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Sora", sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* Animated background */
+      .bg-pattern {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: radial-gradient(
+            circle at 20% 20%,
+            rgba(162, 89, 255, 0.08) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 80%,
+            rgba(26, 188, 254, 0.08) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 50% 50%,
+            rgba(10, 207, 131, 0.05) 0%,
+            transparent 50%
+          );
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 40px 24px;
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Header */
+      .header {
+        text-align: center;
+        margin-bottom: 60px;
+        animation: fadeInDown 0.8s ease-out;
+      }
+
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .header h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        background: linear-gradient(
+          135deg,
+          var(--accent-figma),
+          var(--accent-blue)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 16px;
+        letter-spacing: -0.02em;
+      }
+
+      .header p {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        max-width: 700px;
+        margin: 0 auto;
+        line-height: 1.6;
+      }
+
+      /* Main Architecture Diagram */
+      .architecture {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 40px;
+        margin-bottom: 60px;
+      }
+
+      /* Figma Environment Box */
+      .figma-env {
+        background: linear-gradient(
+          135deg,
+          rgba(162, 89, 255, 0.1),
+          rgba(26, 188, 254, 0.05)
+        );
+        border: 2px solid var(--accent-figma);
+        border-radius: 24px;
+        padding: 32px;
+        position: relative;
+        animation: fadeIn 0.8s ease-out 0.2s both;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .figma-env-label {
+        position: absolute;
+        top: -14px;
+        left: 32px;
+        background: var(--accent-figma);
+        color: white;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .figma-env-label svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* Three-column layout inside Figma */
+      .plugin-structure {
+        display: grid;
+        grid-template-columns: 280px 1fr 280px;
+        gap: 24px;
+        align-items: start;
+        margin-top: 16px;
+      }
+
+      @media (max-width: 1100px) {
+        .plugin-structure {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* File Cards */
+      .file-card {
+        background: var(--bg-secondary);
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+        animation: slideUp 0.6s ease-out both;
+      }
+
+      .file-card:nth-child(1) {
+        animation-delay: 0.3s;
+      }
+      .file-card:nth-child(2) {
+        animation-delay: 0.4s;
+      }
+      .file-card:nth-child(3) {
+        animation-delay: 0.5s;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .file-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--accent-figma);
+        box-shadow: 0 20px 40px rgba(162, 89, 255, 0.15);
+      }
+
+      .file-header {
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .file-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 0.75rem;
+      }
+
+      .file-icon.manifest {
+        background: linear-gradient(
+          135deg,
+          var(--accent-orange),
+          var(--accent-yellow)
+        );
+      }
+      .file-icon.code {
+        background: linear-gradient(
+          135deg,
+          var(--accent-yellow),
+          var(--accent-orange)
+        );
+      }
+      .file-icon.ui {
+        background: linear-gradient(
+          135deg,
+          var(--accent-blue),
+          var(--accent-green)
+        );
+      }
+
+      .file-info h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 2px;
+        font-family: "Space Mono", monospace;
+      }
+
+      .file-info span {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+
+      .file-content {
+        padding: 20px;
+      }
+
+      .file-description {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 16px;
+      }
+
+      .file-features {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .feature-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+      }
+
+      .feature-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.7rem;
+      }
+
+      .feature-icon.check {
+        background: rgba(10, 207, 131, 0.2);
+        color: var(--accent-green);
+      }
+
+      /* Center Column - Communication Flow */
+      .communication-flow {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        padding: 20px 0;
+      }
+
+      .sandbox-box {
+        background: var(--bg-tertiary);
+        border: 2px dashed var(--accent-yellow);
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        width: 100%;
+      }
+
+      .sandbox-label {
+        font-size: 0.75rem;
+        color: var(--accent-yellow);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 12px;
+        font-weight: 600;
+      }
+
+      .sandbox-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .sandbox-desc {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      .iframe-box {
+        background: var(--bg-tertiary);
+        border: 2px solid var(--accent-blue);
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        width: 100%;
+      }
+
+      .iframe-label {
+        font-size: 0.75rem;
+        color: var(--accent-blue);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 12px;
+        font-weight: 600;
+      }
+
+      .arrow-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 0;
+      }
+
+      .arrow {
+        width: 3px;
+        height: 40px;
+        position: relative;
+      }
+
+      .arrow.down {
+        background: linear-gradient(
+          to bottom,
+          var(--accent-figma),
+          var(--accent-blue)
+        );
+      }
+
+      .arrow.up {
+        background: linear-gradient(
+          to top,
+          var(--accent-blue),
+          var(--accent-figma)
+        );
+      }
+
+      .arrow::after {
+        content: "";
+        position: absolute;
+        bottom: -6px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+      }
+
+      .arrow.down::after {
+        border-top: 8px solid var(--accent-blue);
+      }
+
+      .arrow.up::after {
+        top: -6px;
+        bottom: auto;
+        border-top: none;
+        border-bottom: 8px solid var(--accent-figma);
+      }
+
+      .message-label {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        font-family: "Space Mono", monospace;
+        text-align: center;
+        background: var(--bg-secondary);
+        padding: 4px 10px;
+        border-radius: 4px;
+      }
+
+      /* API Access Section */
+      .api-section {
+        margin-top: 20px;
+        padding: 20px;
+        background: rgba(10, 207, 131, 0.1);
+        border: 1px solid rgba(10, 207, 131, 0.3);
+        border-radius: 12px;
+      }
+
+      .api-section h4 {
+        font-size: 0.9rem;
+        color: var(--accent-green);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .api-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+
+      .api-item {
+        font-size: 0.75rem;
+        font-family: "Space Mono", monospace;
+        color: var(--text-secondary);
+        padding: 6px 10px;
+        background: var(--bg-secondary);
+        border-radius: 6px;
+      }
+
+      /* Legend */
+      .legend {
+        display: flex;
+        justify-content: center;
+        gap: 32px;
+        margin-top: 40px;
+        flex-wrap: wrap;
+        animation: fadeIn 0.8s ease-out 0.7s both;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+      }
+
+      .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+
+      .legend-dot.manifest {
+        background: var(--accent-orange);
+      }
+      .legend-dot.code {
+        background: var(--accent-yellow);
+      }
+      .legend-dot.ui {
+        background: var(--accent-blue);
+      }
+      .legend-dot.figma {
+        background: var(--accent-figma);
+      }
+
+      /* Code Preview */
+      .code-preview {
+        background: var(--bg-secondary);
+        border-radius: 16px;
+        overflow: hidden;
+        margin-top: 60px;
+        border: 1px solid var(--border-color);
+        animation: fadeIn 0.8s ease-out 0.8s both;
+      }
+
+      .code-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--bg-tertiary);
+      }
+
+      .code-tab {
+        padding: 14px 24px;
+        font-size: 0.85rem;
+        font-family: "Space Mono", monospace;
+        color: var(--text-muted);
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s ease;
+      }
+
+      .code-tab:hover {
+        color: var(--text-secondary);
+      }
+
+      .code-tab.active {
+        color: var(--accent-figma);
+        border-bottom-color: var(--accent-figma);
+        background: var(--bg-secondary);
+      }
+
+      .code-content {
+        display: none;
+        padding: 24px;
+      }
+
+      .code-content.active {
+        display: block;
+      }
+
+      pre {
+        font-family: "Space Mono", monospace;
+        font-size: 0.8rem;
+        line-height: 1.7;
+        overflow-x: auto;
+      }
+
+      .code-comment {
+        color: #6a9955;
+      }
+      .code-key {
+        color: #9cdcfe;
+      }
+      .code-string {
+        color: #ce9178;
+      }
+      .code-keyword {
+        color: #c586c0;
+      }
+      .code-function {
+        color: #dcdcaa;
+      }
+      .code-variable {
+        color: #4fc1ff;
+      }
+      .code-bracket {
+        color: #ffd700;
+      }
+
+      /* Workflow Section */
+      .workflow-section {
+        margin-top: 60px;
+        animation: fadeIn 0.8s ease-out 0.9s both;
+      }
+
+      .workflow-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 32px;
+        color: var(--text-primary);
+      }
+
+      .workflow-steps {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+      }
+
+      @media (max-width: 900px) {
+        .workflow-steps {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 500px) {
+        .workflow-steps {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .workflow-step {
+        background: var(--bg-secondary);
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        border: 1px solid var(--border-color);
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      .workflow-step:hover {
+        border-color: var(--accent-figma);
+        transform: translateY(-4px);
+      }
+
+      .step-number {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(
+          135deg,
+          var(--accent-figma),
+          var(--accent-blue)
+        );
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+        margin: 0 auto 16px;
+      }
+
+      .step-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .step-desc {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      /* Footer */
+      .footer {
+        text-align: center;
+        margin-top: 60px;
+        padding: 32px;
+        border-top: 1px solid var(--border-color);
+        color: var(--text-muted);
+        font-size: 0.85rem;
+      }
+
+      .footer a {
+        color: var(--accent-figma);
+        text-decoration: none;
+      }
+
+      .footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-pattern"></div>
+
+    <div class="container">
+      <!-- Header -->
+      <header class="header">
+        <h1>How Figma Plugins Work</h1>
+        <p>
+          Three parts: <strong>📋 Instructions</strong> •
+          <strong>🧠 Brain</strong> (touches your file) •
+          <strong>😊 Face</strong> (what you see)
+        </p>
+      </header>
+
+      <!-- Main Architecture -->
+      <section class="architecture">
+        <div class="figma-env">
+          <div class="figma-env-label">
+            <svg viewBox="0 0 38 57" fill="currentColor">
+              <path d="M19 28.5a9.5 9.5 0 1 1 19 0 9.5 9.5 0 0 1-19 0z" />
+              <path
+                d="M0 47.5A9.5 9.5 0 0 1 9.5 38H19v9.5a9.5 9.5 0 1 1-19 0z"
+              />
+              <path d="M19 0v19h9.5a9.5 9.5 0 1 0 0-19H19z" />
+              <path
+                d="M0 9.5A9.5 9.5 0 0 0 9.5 19H19V0H9.5A9.5 9.5 0 0 0 0 9.5z"
+              />
+              <path
+                d="M0 28.5A9.5 9.5 0 0 0 9.5 38H19V19H9.5A9.5 9.5 0 0 0 0 28.5z"
+              />
+            </svg>
+            Figma Editor Environment
+          </div>
+
+          <div class="plugin-structure">
+            <!-- Manifest File -->
+            <div class="file-card">
+              <div class="file-header">
+                <div class="file-icon manifest">{ }</div>
+                <div class="file-info">
+                  <h3>manifest.json</h3>
+                  <span>📋 The Instructions</span>
+                </div>
+              </div>
+              <div class="file-content">
+                <p class="file-description">
+                  The "ID card" for your plugin — tells Figma what it's called
+                  and where to find its parts.
+                </p>
+                <div class="file-features">
+                  <div class="feature-item">
+                    <span class="feature-icon check">✓</span>
+                    <span><strong>name</strong> — plugin name</span>
+                  </div>
+                  <div class="feature-item">
+                    <span class="feature-icon check">✓</span>
+                    <span><strong>id</strong> — unique identifier</span>
+                  </div>
+                  <div class="feature-item">
+                    <span class="feature-icon check">✓</span>
+                    <span><strong>main</strong> → code.js</span>
+                  </div>
+                  <div class="feature-item">
+                    <span class="feature-icon check">✓</span>
+                    <span><strong>ui</strong> → ui.html</span>
+                  </div>
+                  <div class="feature-item">
+                    <span class="feature-icon check">✓</span>
+                    <span><strong>editorType</strong> — where it works</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Communication Flow -->
+            <div class="communication-flow">
+              <div class="sandbox-box">
+                <div class="sandbox-label">🧠 The Brain</div>
+                <div class="sandbox-title">code.js</div>
+                <div class="sandbox-desc">
+                  Can read & modify your Figma file directly.<br />
+                  <em>Cannot</em> access the internet.
+                </div>
+                <div class="api-section">
+                  <h4>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path
+                        d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                      />
+                    </svg>
+                    What It Can Do With Your Figma File
+                  </h4>
+                  <div class="api-list">
+                    <div class="api-item">See current page</div>
+                    <div class="api-item">Read all layers</div>
+                    <div class="api-item">Show the UI window</div>
+                    <div class="api-item">Show notifications</div>
+                    <div class="api-item">Create frames & shapes</div>
+                    <div class="api-item">Close the plugin</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="arrow-container">
+                <div class="message-label">💬 Sending messages down</div>
+                <div class="arrow down"></div>
+                <div
+                  style="
+                    font-size: 0.65rem;
+                    color: var(--text-muted);
+                    margin-top: 4px;
+                  "
+                >
+                  "Here's what's in your file"
+                </div>
+              </div>
+
+              <div class="arrow-container">
+                <div class="arrow up"></div>
+                <div class="message-label">💬 Sending messages up</div>
+                <div
+                  style="
+                    font-size: 0.65rem;
+                    color: var(--text-muted);
+                    margin-top: 4px;
+                  "
+                >
+                  "User clicked this button"
+                </div>
+              </div>
+
+              <div class="iframe-box">
+                <div class="iframe-label">😊 The Face</div>
+                <div class="sandbox-title">ui.html</div>
+                <div class="sandbox-desc">
+                  The UI you see — buttons, inputs, animations.<br />
+                  <em>Cannot</em> touch your Figma file directly.
+                </div>
+                <div
+                  class="api-section"
+                  style="
+                    border-color: rgba(26, 188, 254, 0.3);
+                    background: rgba(26, 188, 254, 0.1);
+                  "
+                >
+                  <h4 style="color: var(--accent-blue)">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                    </svg>
+                    What It Can Do (Web Things)
+                  </h4>
+                  <div class="api-list">
+                    <div class="api-item">Load data from internet</div>
+                    <div class="api-item">Beautiful animations</div>
+                    <div class="api-item">Show images & videos</div>
+                    <div class="api-item">Remember user preferences</div>
+                    <div class="api-item">Complex visualizations</div>
+                    <div class="api-item">Upload/download files</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- UI File -->
+            <div class="file-card">
+              <div class="file-header">
+                <div class="file-icon ui">&lt;/&gt;</div>
+                <div class="file-info">
+                  <h3>ui.html</h3>
+                  <span>😊 The Face</span>
+                </div>
+              </div>
+              <div class="file-content">
+                <p class="file-description">
+                  The visual design — buttons, colors, typography. You have full
+                  creative control.
+                </p>
+                <div class="file-features">
+                  <div class="feature-item">
+                    <span class="feature-icon check">✓</span>
+                    <span>Any HTML/CSS design</span>
+                  </div>
+                  <div class="feature-item">
+                    <span class="feature-icon check">✓</span>
+                    <span>Your colors & fonts</span>
+                  </div>
+                  <div class="feature-item">
+                    <span class="feature-icon check">✓</span>
+                    <span>Internet access</span>
+                  </div>
+                  <div class="feature-item">
+                    <span class="feature-icon check">✓</span>
+                    <span>Animations</span>
+                  </div>
+                  <div class="feature-item">
+                    <span class="feature-icon check">✓</span>
+                    <span>React, Vue, etc.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Legend -->
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot manifest"></div>
+          <span>📋 Instructions (manifest.json)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot code"></div>
+          <span>🧠 The Brain (code.js)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot ui"></div>
+          <span>😊 The Face (ui.html)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot figma"></div>
+          <span>🎨 Figma Environment</span>
+        </div>
+      </div>
+
+      <!-- Code Preview Section -->
+      <div style="text-align: center; margin-top: 60px; margin-bottom: 20px">
+        <p style="color: var(--text-muted); font-size: 0.85rem">
+          💡 <em>Optional:</em> What the files actually look like
+        </p>
+      </div>
+      <div class="code-preview">
+        <div class="code-tabs">
+          <div class="code-tab active" data-tab="manifest">📋 Instructions</div>
+          <div class="code-tab" data-tab="code">🧠 The Brain</div>
+          <div class="code-tab" data-tab="ui">😊 The Face</div>
+        </div>
+
+        <div class="code-content active" id="manifest">
+          <pre><span class="code-bracket">{</span>
+  <span class="code-key">"name"</span>: <span class="code-string">"Design Token Finder"</span>,
+  <span class="code-key">"id"</span>: <span class="code-string">"design-token-finder"</span>,
+  <span class="code-key">"main"</span>: <span class="code-string">"code.js"</span>,          <span class="code-comment">// → Brain</span>
+  <span class="code-key">"ui"</span>: <span class="code-string">"ui.html"</span>,            <span class="code-comment">// → Face</span>
+  <span class="code-key">"editorType"</span>: [<span class="code-string">"figma"</span>]
+<span class="code-bracket">}</span></pre>
+        </div>
+
+        <div class="code-content" id="code">
+          <pre><span class="code-comment">// Show the UI</span>
+<span class="code-variable">figma</span>.<span class="code-function">showUI</span>(__html__);
+
+<span class="code-comment">// Listen for messages from the Face</span>
+<span class="code-variable">figma</span>.ui.<span class="code-function">onmessage</span> = (msg) => <span class="code-bracket">{</span>
+  <span class="code-keyword">if</span> (msg.type === <span class="code-string">'copy-token'</span>) <span class="code-bracket">{</span>
+    <span class="code-variable">figma</span>.<span class="code-function">notify</span>(<span class="code-string">`Copied!`</span>);
+  <span class="code-bracket">}</span>
+<span class="code-bracket">}</span>;
+
+<span class="code-comment">// Send data to the Face</span>
+<span class="code-variable">figma</span>.ui.<span class="code-function">postMessage</span>(<span class="code-bracket">{</span> type: <span class="code-string">'update'</span>, data: ... <span class="code-bracket">}</span>);</pre>
+        </div>
+
+        <div class="code-content" id="ui">
+          <pre><span class="code-keyword">&lt;script&gt;</span>
+  <span class="code-comment">// Listen for messages from the Brain</span>
+  <span class="code-variable">onmessage</span> = (event) => <span class="code-bracket">{</span>
+    <span class="code-keyword">const</span> msg = event.data.pluginMessage;
+    updateUI(msg);
+  <span class="code-bracket">}</span>;
+
+  <span class="code-comment">// Send messages to the Brain</span>
+  <span class="code-keyword">function</span> <span class="code-function">onButtonClick</span>() <span class="code-bracket">{</span>
+    parent.<span class="code-function">postMessage</span>(<span class="code-bracket">{</span> 
+      pluginMessage: <span class="code-bracket">{</span> type: <span class="code-string">'do-something'</span> <span class="code-bracket">}</span> 
+    <span class="code-bracket">}</span>, <span class="code-string">'*'</span>);
+  <span class="code-bracket">}</span>
+<span class="code-keyword">&lt;/script&gt;</span></pre>
+        </div>
+      </div>
+
+      <!-- Real World Analogy -->
+      <section class="workflow-section" style="margin-top: 40px">
+        <h2 class="workflow-title">🍽️ Restaurant Analogy</h2>
+        <div
+          style="
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--bg-secondary);
+            padding: 32px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+          "
+        >
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 24px;
+            "
+          >
+            <div style="text-align: center">
+              <div style="font-size: 2.5rem; margin-bottom: 8px">📋</div>
+              <h4
+                style="
+                  color: var(--accent-orange);
+                  margin-bottom: 4px;
+                  font-size: 1rem;
+                "
+              >
+                The Menu
+              </h4>
+              <p style="font-size: 0.8rem; color: var(--text-muted)">
+                manifest.json
+              </p>
+            </div>
+            <div style="text-align: center">
+              <div style="font-size: 2.5rem; margin-bottom: 8px">🧠</div>
+              <h4
+                style="
+                  color: var(--accent-yellow);
+                  margin-bottom: 4px;
+                  font-size: 1rem;
+                "
+              >
+                The Kitchen
+              </h4>
+              <p style="font-size: 0.8rem; color: var(--text-muted)">
+                code.js — touches the food
+              </p>
+            </div>
+            <div style="text-align: center">
+              <div style="font-size: 2.5rem; margin-bottom: 8px">😊</div>
+              <h4
+                style="
+                  color: var(--accent-blue);
+                  margin-bottom: 4px;
+                  font-size: 1rem;
+                "
+              >
+                The Dining Room
+              </h4>
+              <p style="font-size: 0.8rem; color: var(--text-muted)">
+                ui.html — what customers see
+              </p>
+            </div>
+          </div>
+          <p
+            style="
+              font-size: 0.85rem;
+              color: var(--text-secondary);
+              text-align: center;
+              margin-top: 20px;
+              padding-top: 20px;
+              border-top: 1px solid var(--border-color);
+            "
+          >
+            Waiters (messages) carry orders between the dining room and kitchen.
+          </p>
+        </div>
+      </section>
+
+      <!-- Why Separated Section -->
+      <section class="workflow-section" style="margin-top: 40px">
+        <h2 class="workflow-title">🔒 Why Separated? Security.</h2>
+        <div
+          style="
+            max-width: 700px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+          "
+        >
+          <div
+            style="
+              background: var(--bg-secondary);
+              padding: 20px;
+              border-radius: 12px;
+              border: 1px solid var(--accent-yellow);
+            "
+          >
+            <h4 style="color: var(--accent-yellow); margin-bottom: 8px">
+              🧠 Brain = Secure Room
+            </h4>
+            <p style="font-size: 0.85rem; color: var(--text-secondary)">
+              Can touch files, but no internet access.
+            </p>
+          </div>
+          <div
+            style="
+              background: var(--bg-secondary);
+              padding: 20px;
+              border-radius: 12px;
+              border: 1px solid var(--accent-blue);
+            "
+          >
+            <h4 style="color: var(--accent-blue); margin-bottom: 8px">
+              😊 Face = Public Window
+            </h4>
+            <p style="font-size: 0.85rem; color: var(--text-secondary)">
+              Has internet, but can't touch files.
+            </p>
+          </div>
+        </div>
+        <p
+          style="
+            text-align: center;
+            margin-top: 16px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+          "
+        >
+          They talk through messages — keeping your files safe!
+        </p>
+      </section>
+
+      <!-- Workflow Steps -->
+      <section class="workflow-section">
+        <h2 class="workflow-title">The Flow</h2>
+        <div class="workflow-steps">
+          <div class="workflow-step">
+            <div class="step-number">1</div>
+            <h3 class="step-title">Run Plugin</h3>
+            <p class="step-desc">Figma reads manifest.json</p>
+          </div>
+          <div class="workflow-step">
+            <div class="step-number">2</div>
+            <h3 class="step-title">Brain Wakes Up</h3>
+            <p class="step-desc">code.js can now access your file</p>
+          </div>
+          <div class="workflow-step">
+            <div class="step-number">3</div>
+            <h3 class="step-title">Face Appears</h3>
+            <p class="step-desc">ui.html shows the interface</p>
+          </div>
+          <div class="workflow-step">
+            <div class="step-number">4</div>
+            <h3 class="step-title">They Communicate</h3>
+            <p class="step-desc">Messages pass between them</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <p>
+          Based on
+          <a href="https://developers.figma.com/docs/plugins/" target="_blank"
+            >Figma Plugin Documentation</a
+          >
+          • Created for AI Workshop
+        </p>
+      </footer>
+    </div>
+
+    <script>
+      // Tab switching for code preview
+      document.querySelectorAll(".code-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          // Remove active from all tabs and content
+          document
+            .querySelectorAll(".code-tab")
+            .forEach((t) => t.classList.remove("active"))
+          document
+            .querySelectorAll(".code-content")
+            .forEach((c) => c.classList.remove("active"))
+
+          // Add active to clicked tab
+          tab.classList.add("active")
+
+          // Show corresponding content
+          const tabId = tab.dataset.tab
+          document.getElementById(tabId).classList.add("active")
+        })
+      })
+    </script>
+  </body>
+</html>

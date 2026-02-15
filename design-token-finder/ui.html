@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Design Token Finder</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 11px;
+      color: #333;
+      background: #ffffff;
+      padding: 0;
+      margin: 0;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e5e5e5;
+      background: #f8f8f8;
+    }
+
+    .header h1 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #000;
+      margin-bottom: 8px;
+    }
+
+    /* Search Bar */
+    .search-container {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      font-size: 11px;
+      font-family: inherit;
+      background: #fff;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #0055ff;
+    }
+
+    .search-input::placeholder {
+      color: #999;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #e5e5e5;
+      background: #fafafa;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px 16px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      font-size: 11px;
+      font-weight: 500;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .tab:hover {
+      background: #f0f0f0;
+      color: #000;
+    }
+
+    .tab.active {
+      color: #0055ff;
+      border-bottom-color: #0055ff;
+      background: #fff;
+    }
+
+    /* Content Area */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+    }
+
+    .token-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .token-card {
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      padding: 12px;
+      background: #fff;
+      transition: all 0.2s;
+    }
+
+    .token-card:hover {
+      border-color: #0055ff;
+      box-shadow: 0 2px 4px rgba(0, 85, 255, 0.1);
+    }
+
+    .token-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .token-name {
+      font-weight: 600;
+      font-size: 11px;
+      color: #000;
+    }
+
+    .token-value {
+      font-size: 10px;
+      color: #666;
+      font-family: 'Monaco', 'Menlo', monospace;
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .token-preview {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .color-swatch {
+      width: 40px;
+      height: 24px;
+      border-radius: 4px;
+      border: 1px solid #e5e5e5;
+      flex-shrink: 0;
+    }
+
+    .spacing-visual {
+      height: 24px;
+      background: linear-gradient(90deg, #0055ff 0%, #0055ff var(--width, 50%), transparent var(--width, 50%));
+      border-radius: 4px;
+      border: 1px solid #e5e5e5;
+      flex: 1;
+      position: relative;
+    }
+
+    .spacing-visual::after {
+      content: attr(data-value);
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 9px;
+      color: #666;
+    }
+
+    .typography-preview {
+      font-size: 12px;
+      color: #000;
+      line-height: 1.5;
+    }
+
+    .copy-button {
+      margin-top: 8px;
+      width: 100%;
+      padding: 6px 12px;
+      background: #0055ff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: inherit;
+    }
+
+    .copy-button:hover {
+      background: #0044cc;
+    }
+
+    .copy-button:active {
+      background: #0033aa;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+
+    .empty-state-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .empty-state-text {
+      font-size: 11px;
+    }
+
+    /* Category Badge */
+    .category-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      background: #f0f0f0;
+      border-radius: 3px;
+      font-size: 9px;
+      color: #666;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Design Token Finder</h1>
+    </div>
+
+    <div class="search-container">
+      <input 
+        type="text" 
+        class="search-input" 
+        id="searchInput" 
+        placeholder="Search tokens by name or value..."
+      />
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-category="colors">Colors</button>
+      <button class="tab" data-category="spacing">Spacing</button>
+      <button class="tab" data-category="typography">Typography</button>
+    </div>
+
+    <div class="content">
+      <div class="token-list" id="tokenList">
+        <!-- Tokens will be rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sample token data - Replace with your actual design system tokens
+    const tokens = {
+      colors: [
+        { name: "primary-500", value: "#0055FF", category: "Brand" },
+        { name: "primary-600", value: "#0044CC", category: "Brand" },
+        { name: "primary-400", value: "#3377FF", category: "Brand" },
+        { name: "neutral-100", value: "#F5F5F5", category: "Neutral" },
+        { name: "neutral-200", value: "#E5E5E5", category: "Neutral" },
+        { name: "neutral-500", value: "#999999", category: "Neutral" },
+        { name: "neutral-900", value: "#1A1A1A", category: "Neutral" },
+        { name: "success-500", value: "#00C853", category: "Semantic" },
+        { name: "error-500", value: "#FF1744", category: "Semantic" },
+        { name: "warning-500", value: "#FF9800", category: "Semantic" }
+      ],
+      spacing: [
+        { name: "space-1", value: "4px", multiplier: "0.5x" },
+        { name: "space-2", value: "8px", multiplier: "1x" },
+        { name: "space-3", value: "12px", multiplier: "1.5x" },
+        { name: "space-4", value: "16px", multiplier: "2x" },
+        { name: "space-6", value: "24px", multiplier: "3x" },
+        { name: "space-8", value: "32px", multiplier: "4x" },
+        { name: "space-12", value: "48px", multiplier: "6x" },
+        { name: "space-16", value: "64px", multiplier: "8x" }
+      ],
+      typography: [
+        { name: "heading-xl", value: "32px / 40px", font: "Inter Bold", preview: "Heading XL" },
+        { name: "heading-lg", value: "24px / 32px", font: "Inter Bold", preview: "Heading LG" },
+        { name: "heading-md", value: "20px / 28px", font: "Inter SemiBold", preview: "Heading MD" },
+        { name: "heading-sm", value: "18px / 24px", font: "Inter SemiBold", preview: "Heading SM" },
+        { name: "body-lg", value: "18px / 28px", font: "Inter Regular", preview: "Body Large Text" },
+        { name: "body-md", value: "16px / 24px", font: "Inter Regular", preview: "Body Medium Text" },
+        { name: "body-sm", value: "14px / 20px", font: "Inter Regular", preview: "Body Small Text" },
+        { name: "caption", value: "12px / 16px", font: "Inter Regular", preview: "Caption Text" }
+      ]
+    };
+
+    let currentCategory = 'colors';
+    let searchQuery = '';
+
+    // Initialize
+    function init() {
+      renderTokens();
+      setupEventListeners();
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      // Tab switching
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentCategory = tab.dataset.category;
+          renderTokens();
+        });
+      });
+
+      // Search
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        searchQuery = e.target.value.toLowerCase();
+        renderTokens();
+      });
+    }
+
+    // Filter tokens based on search query
+    function filterTokens(tokenList) {
+      if (!searchQuery) return tokenList;
+      
+      return tokenList.filter(token => {
+        const nameMatch = token.name.toLowerCase().includes(searchQuery);
+        const valueMatch = token.value.toLowerCase().includes(searchQuery);
+        const categoryMatch = token.category?.toLowerCase().includes(searchQuery);
+        return nameMatch || valueMatch || categoryMatch;
+      });
+    }
+
+    // Render tokens
+    function renderTokens() {
+      const tokenList = document.getElementById('tokenList');
+      const categoryTokens = tokens[currentCategory] || [];
+      const filteredTokens = filterTokens(categoryTokens);
+
+      if (filteredTokens.length === 0) {
+        tokenList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <div class="empty-state-text">No tokens found</div>
+          </div>
+        `;
+        return;
+      }
+
+      tokenList.innerHTML = filteredTokens.map(token => {
+        if (currentCategory === 'colors') {
+          return renderColorToken(token);
+        } else if (currentCategory === 'spacing') {
+          return renderSpacingToken(token);
+        } else if (currentCategory === 'typography') {
+          return renderTypographyToken(token);
+        }
+      }).join('');
+    }
+
+    // Render color token
+    function renderColorToken(token) {
+      return `
+        <div class="token-card">
+          <div class="token-header">
+            <div>
+              <span class="token-name">${token.name}</span>
+              ${token.category ? `<span class="category-badge">${token.category}</span>` : ''}
+            </div>
+            <div class="token-value">${token.value}</div>
+          </div>
+          <div class="token-preview">
+            <div class="color-swatch" style="background-color: ${token.value}"></div>
+          </div>
+          <button class="copy-button" onclick="copyToken('${token.name}', '${token.value}')">
+            Copy ${token.value}
+          </button>
+        </div>
+      `;
+    }
+
+    // Render spacing token
+    function renderSpacingToken(token) {
+      const pxValue = parseInt(token.value);
+      const percentage = Math.min((pxValue / 64) * 100, 100);
+      
+      return `
+        <div class="token-card">
+          <div class="token-header">
+            <div>
+              <span class="token-name">${token.name}</span>
+              ${token.multiplier ? `<span class="category-badge">${token.multiplier}</span>` : ''}
+            </div>
+            <div class="token-value">${token.value}</div>
+          </div>
+          <div class="token-preview">
+            <div class="spacing-visual" style="--width: ${percentage}%" data-value="${token.value}"></div>
+          </div>
+          <button class="copy-button" onclick="copyToken('${token.name}', '${token.value}')">
+            Copy ${token.value}
+          </button>
+        </div>
+      `;
+    }
+
+    // Render typography token
+    function renderTypographyToken(token) {
+      return `
+        <div class="token-card">
+          <div class="token-header">
+            <div>
+              <span class="token-name">${token.name}</span>
+            </div>
+            <div class="token-value">${token.value}</div>
+          </div>
+          <div class="token-preview">
+            <div class="typography-preview" style="font-size: ${token.value.split(' / ')[0]}; line-height: ${token.value.split(' / ')[1] || '1.5'};">
+              ${token.preview || 'Sample Text'}
+            </div>
+          </div>
+          <button class="copy-button" onclick="copyToken('${token.name}', '${token.value}')">
+            Copy ${token.value}
+          </button>
+        </div>
+      `;
+    }
+
+    // Copy token to clipboard
+    function copyToken(name, value) {
+      // Copy to clipboard
+      navigator.clipboard.writeText(value).then(() => {
+        // Notify Figma
+        parent.postMessage({ 
+          pluginMessage: { 
+            type: 'copy-token', 
+            tokenName: name, 
+            tokenValue: value 
+          } 
+        }, '*');
+        
+        // Visual feedback
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = 'Copied!';
+        button.style.background = '#00C853';
+        
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.style.background = '#0055ff';
+        }, 1000);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+      });
+    }
+
+    // Initialize on load
+    init();
+  </script>
+</body>
+</html>

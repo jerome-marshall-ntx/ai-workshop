@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full Body (HTML + CSS + JS)</title>
+    <style>
+        /* SAME CSS AS BEFORE (THE SKIN) */
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5f6fa;
+            --text-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f7;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 1rem;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--primary-color);
+        }
+
+        p {
+            color: #7f8c8d;
+            margin-top: 0.5rem;
+        }
+
+        section {
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 0.8rem;
+        }
+
+        /* Counter Styling */
+        #counter-display {
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 1rem 0;
+            color: var(--text-color);
+            transition: color 0.3s;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: #357abd;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #btn-reset {
+            background-color: #95a5a6;
+        }
+
+        #btn-decrement {
+            background-color: var(--accent-color);
+        }
+
+        /* Task List Styling */
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: var(--secondary-color);
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        li:hover {
+            background-color: #dcdde1;
+        }
+
+        /* Dynamic classes handled by JS */
+        li.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+            background-color: #e8f8f5;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        li .delete-btn {
+            background: none;
+            color: #e74c3c;
+            padding: 2px 6px;
+            font-size: 0.8rem;
+            opacity: 0;
+        }
+        
+        li:hover .delete-btn {
+            opacity: 1;
+        }
+        
+        li .delete-btn:hover {
+            background-color: #fadbd8;
+            transform: none;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #bdc3c7;
+            margin-top: 2rem;
+        }
+        
+        /* Animation keyframes */
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .pop-anim {
+            animation: pop 0.2s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Task Counter App</h1>
+            <p>HTML + CSS + JS (Fully Alive!)</p>
+        </header>
+
+        <main>
+            <!-- Counter Section -->
+            <section>
+                <h2>Counter</h2>
+                <div id="counter-display">0</div>
+                <div class="button-group">
+                    <button id="btn-decrement">- Decrease</button>
+                    <button id="btn-reset">Reset</button>
+                    <button id="btn-increment">+ Increase</button>
+                </div>
+            </section>
+
+            <!-- Task List Section -->
+            <section>
+                <h2>My Tasks</h2>
+                <p style="font-size: 0.8rem; margin-bottom: 10px;">Try clicking items or adding new ones!</p>
+                <ul id="task-list">
+                    <li class="completed">Learn HTML Structure <button class="delete-btn">x</button></li>
+                    <li>Master CSS Styling <button class="delete-btn">x</button></li>
+                    <li>Understand JavaScript Logic <button class="delete-btn">x</button></li>
+                </ul>
+                
+                <div class="input-group">
+                    <input type="text" placeholder="Add a new task..." id="task-input">
+                    <button id="btn-add">Add</button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Step 3: Complete Web App</p>
+        </footer>
+    </div>
+
+    <script>
+        /*
+            THE MUSCLES AND BRAIN (JavaScript)
+            This code provides functionality and behavior.
+            It handles clicks, updates content, and manages logic.
+        */
+
+        // --- Counter Functionality ---
+        const counterDisplay = document.getElementById('counter-display');
+        const btnIncrement = document.getElementById('btn-increment');
+        const btnDecrement = document.getElementById('btn-decrement');
+        const btnReset = document.getElementById('btn-reset');
+
+        let count = 0;
+
+        function updateCounter() {
+            counterDisplay.textContent = count;
+            
+            // Visual logic: change color based on value
+            if (count > 0) counterDisplay.style.color = '#2ecc71';
+            else if (count < 0) counterDisplay.style.color = '#e74c3c';
+            else counterDisplay.style.color = '#2c3e50';
+            
+            // Add animation class then remove it
+            counterDisplay.classList.remove('pop-anim');
+            void counterDisplay.offsetWidth; // trigger reflow
+            counterDisplay.classList.add('pop-anim');
+        }
+
+        btnIncrement.addEventListener('click', () => {
+            count++;
+            updateCounter();
+        });
+
+        btnDecrement.addEventListener('click', () => {
+            count--;
+            updateCounter();
+        });
+
+        btnReset.addEventListener('click', () => {
+            count = 0;
+            updateCounter();
+        });
+
+        // --- Task List Functionality ---
+        const taskInput = document.getElementById('task-input');
+        const btnAdd = document.getElementById('btn-add');
+        const taskList = document.getElementById('task-list');
+
+        // Function to create delete button for existing items
+        function setupExistingItems() {
+            const items = taskList.querySelectorAll('li');
+            items.forEach(item => {
+                // Toggle complete on click
+                item.addEventListener('click', (e) => {
+                    // Don't toggle if delete button was clicked
+                    if (e.target.classList.contains('delete-btn')) return;
+                    item.classList.toggle('completed');
+                });
+                
+                // Setup delete button logic
+                const deleteBtn = item.querySelector('.delete-btn');
+                if(deleteBtn) {
+                    deleteBtn.addEventListener('click', () => {
+                        item.remove();
+                    });
+                }
+            });
+        }
+
+        function addTask() {
+            const text = taskInput.value.trim();
+            
+            if (text === '') {
+                alert('Please enter a task!');
+                return;
+            }
+
+            const li = document.createElement('li');
+            
+            // Create text node
+            li.textContent = text + " "; // space for button
+            
+            // Create delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'x';
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.onclick = function() {
+                li.remove();
+            };
+            
+            li.appendChild(deleteBtn);
+            
+            // Toggle completed state on click
+            li.addEventListener('click', (e) => {
+                if (e.target !== deleteBtn) {
+                    li.classList.toggle('completed');
+                }
+            });
+
+            taskList.appendChild(li);
+            taskInput.value = ''; // Clear input
+            taskInput.focus();
+        }
+
+        btnAdd.addEventListener('click', addTask);
+
+        // Allow pressing Enter to add task
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        // Initialize existing items
+        setupExistingItems();
+
+    </script>
+</body>
+</html>
