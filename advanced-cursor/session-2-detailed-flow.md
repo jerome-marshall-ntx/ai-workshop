@@ -8,7 +8,7 @@
 
 ---
 
-## Part 1 — The AI Adoption Problem (10 min)
+## Part 1 — The Problem: Why AI Falls Apart on Real Codebases (10 min)
 
 **Goal**: Set the stage with the problem everyone in the room has experienced firsthand — AI is incredible on small or new projects, but struggles on real-world, large codebases. This builds immediate credibility and sets up *why* context engineering matters.
 
@@ -19,10 +19,12 @@
 - AI coding tools are incredible on greenfield projects — build a todo app, a landing page, a new API from scratch, and it feels like magic
 - But try using AI on a 500k-line codebase with 10 years of history, custom patterns, and undocumented conventions — and it falls apart
 - It uses the wrong patterns. It ignores your conventions. It doesn't know about the helper that already exists. It writes code that technically works but doesn't belong.
+- You ship a lot more code, but a lot of it is reworking the slop from last week
 
 > **SLIDE**: *"The bigger and more complex the codebase, the worse AI performs — unless you know why."*
 
-- This isn't a model problem — it's a **context problem**
+### It's Not a Model Problem. It's a Context Problem.
+
 - On greenfield: the AI has all the context it needs (there's barely any codebase to know about)
 - On brownfield: the AI is missing most of the context — your patterns, your architecture, your unwritten rules, your team conventions
 - The AI isn't dumber on big projects. It just **knows less**.
@@ -38,59 +40,11 @@
 
 ---
 
-## Part 2 — Quick Cursor Walkthrough (10 min)
+## Part 2 — Why Context Is Everything (15 min)
 
-**Goal**: Get everyone on the same page before going deep.
+**Goal**: This is the conceptual foundation for everything else. Explain *why* advanced AI usage is really about context management. This section should change how the audience *thinks* about using AI — before we show them any features.
 
-### Interface Tour
-
-- Quick tour of the Cursor interface
-- The four Agent modes:
-
-| Mode | For | Capabilities | Tools |
-|---|---|---|---|
-| **Agent** | Complex features, refactoring | Autonomous exploration, multi-file edits | All tools enabled |
-| **Ask** | Learning, planning, questions | Read-only exploration, no automatic changes | Search tools only |
-| **Plan** | Complex features requiring planning | Creates detailed plans before execution, asks clarifying questions | All tools enabled |
-| **Debug** | Tricky bugs, regressions | Hypothesis generation, log instrumentation, runtime analysis | All tools + debug server |
-
-### Key Shortcuts
-
-| Shortcut | What it does |
-|---|---|
-| `Cmd+I` | Open Agent |
-| `Cmd+L` | Open Ask mode |
-| `Shift+Tab` | Switch agent modes |
-| `Cmd+/` | Switch models |
-| `Enter` (while agent is working) | Queue a message |
-| `Cmd+Enter` (while agent is working) | Send immediately |
-
-### Agent Tools
-
-> **SLIDE**: *Cursor's built-in agent tools list: Semantic search, Search files and folders, Web, Fetch Rules, Read files, Edit files, Run shell commands, Browser, Image generation, Ask questions*
-
-- These are the tools the agent can use automatically
-- It reads files, searches your codebase, runs terminal commands, controls a browser — all on its own
-- The agent decides *which* tools to use based on your prompt and its current context
-
-### Models & Pricing
-
-- Cursor supports all major AI models (Claude, GPT, Gemini, etc.)
-- `Cmd+/` to switch models mid-conversation
-- **Auto mode**: Cursor picks the best model for the task and switches automatically if it detects degraded performance
-- **Max Mode**: Extends context window beyond 200k tokens (slower, more expensive)
-- In our org: everyone gets Pro plan ($20 of agent usage + bonus)
-- If you run out: transfer credits from teammates or request more in `cursor-users` channel
-
-**Demo**: Open the demo project. Show switching between Ask (read-only) and Agent (full edit access). Show the model picker with `Cmd+/`.
-
----
-
-## Part 3 — Why Context Is Everything (15 min)
-
-**Goal**: This is the conceptual foundation for everything else. Explain *why* advanced AI usage is really about context management.
-
-### LLMs Are Pure Functions
+### LLMs Are Stateless
 
 > LLMs are like pure functions:
 >
@@ -101,6 +55,7 @@
 - LLMs have no memory between conversations
 - Every response is only as good as the information in the context window
 - The context window = system instructions + rules + your messages + tool outputs + file contents + everything else
+- Every turn of the loop, the AI is picking the next action — and the *only thing* that influences what comes out is what's in the conversation so far
 
 ### The Smart Zone vs The Dumb Zone
 
@@ -131,8 +86,8 @@
 
 - MCP servers are powerful, but each one adds tool definitions to every conversation
 - Too many MCP servers = your context window is already 40% full before you even type your first message
+- If you have too many MCPs in your coding agent, you are doing all your work in the dumb zone
 - **The fix**: Only enable the MCPs you actually need for the current task
-- 40% is a good guideline — depends on task complexity
 
 ### Optimize Your Context Window For
 
@@ -141,19 +96,24 @@
 3. **Size** — is it as small as possible while still complete?
 4. **Trajectory** — is the conversation heading in the right direction?
 
+### Trajectory Matters
+
+- If you told the agent to do something, it did it wrong, you yelled at it, it did it wrong again, and you yelled at it again — the AI looks at this conversation and says "the pattern here is: I do something wrong, the human yells, I do something wrong, the human yells." So the next most likely thing is to do something wrong again.
+- Be mindful of your conversation trajectory — if it's going badly, starting fresh is often better than correcting
+
 ### Context Problems, Ranked (worst to least bad)
 
 1. **Incorrect Information** — wrong context leads to confidently wrong code
 2. **Missing Information** — gaps lead to guesses and assumptions
-3. **Too Much Noise** — bloated context leads to the "dumb zone"
+3. **Too Much Noise** — bloated context pushes you into the dumb zone
 
 **Presenter note**: Keep coming back to the "smart zone" diagram throughout the session. For every feature you show, tie it back: *"This feature helps you stay in the smart zone because..."*
 
 ---
 
-## Part 4 — Context Management Strategies (15 min)
+## Part 3 — Staying in the Smart Zone: Context Management Strategies (15 min)
 
-**Goal**: Teach the practical techniques for managing context — from naive to advanced.
+**Goal**: Teach the practical techniques for managing context — from naive to advanced. This is the "how to cleverly avoid the dumb zone" section.
 
 ### Strategy 1: The Naive Way — Work Until You Run Out
 
@@ -164,27 +124,31 @@
 - Problem: the context is now full of wrong turns, failed attempts, and noise
 - Resteering wastes context — the AI has to hold both the wrong approach AND your correction
 
+### "You're absolutely right."
+
+> That's what AI tells you when it knows it's screwing up. It's agreeing to get you off its back.
+>
+> When you hear this, it's time to start over.
+
 ### Strategy 2: Start Over vs Resteer
 
 > **SLIDE**: *Two context windows side by side. Left: accumulated conversation with history. Right: fresh context with "Make sure you use XYZ approach" in the first message*
 
+- Most people discover this pretty early in their AI exploration — sometimes it's better to just start fresh
+- Instead of fighting a confused conversation, start a new one with a targeted prompt: "Same task, but this time use XYZ approach, and don't go down that other path"
 - **When to start fresh**: switching tasks, agent is confused, finished a logical unit of work
 - **When to continue**: iterating on the same feature, debugging something it just built, agent needs earlier context
-- Starting fresh with a targeted prompt often gets better results than resteering a confused agent
 - Use `@Past Chats` to reference previous work without dragging in the full history
-
-> **How do you know it's time to start over?**
->
-> When the AI says *"You're absolutely right"* — that's what AI tells you when it knows it's screwing up. It's agreeing to get you off its back.
 
 ### Strategy 3: Intentional Compaction
 
 > **SLIDE**: *Diagram showing: Left side — long conversation with many tool calls → "Summarize progress to progress.md" → progress.md file. Right side — fresh context that reads progress.md and continues from where it left off*
 
-- Before starting over, **save your progress** to a file (e.g., `progress.md`)
-- Include: the approach you're taking, steps completed, current problem, relevant file locations
+- Whether you're on track or off track, you can take your existing context window and compress it down into a file
+- Tell the agent: "Summarize everything we've done to progress.md"
+- Include: the approach, steps completed, current problem, relevant files
 - In the new conversation: "Read progress.md and continue from where we left off"
-- This is **intentional compaction** — you're manually compressing a long conversation into its essential information
+- The new agent gets straight to work instead of having to redo all the searching, file reading, and codebase understanding
 
 ### What Goes Into a Good Compaction
 
@@ -200,28 +164,29 @@ Things that eat up context (and should be compacted):
 > **SLIDE**: *Structured compaction showing: Component Usage Flow → Modal Path (Working) with numbered steps → Message Stream Path (Broken) with numbered steps → Code References with specific file:line references*
 
 A good compaction is structured and specific:
+- **What we're working on** — exactly what the task is
+- **The exact files and line numbers** that matter to the problem
 - **What works**: the known-good paths, with specific file names and line numbers
 - **What's broken**: the specific failure, with the exact code path
-- **Code references**: file paths and line numbers, not vague descriptions
-- Think of it like a well-written bug report — precise enough that someone (or an AI) could pick it up and immediately start fixing
+- Think of it like a well-written bug report — precise enough that someone (or an AI) could pick it up and immediately start working
 
 ### Strategy 4: Subagents for Context Isolation
 
 > **SLIDE**: *Diagram showing parent agent spawning a subagent — "Find where XYZ is handled (use a subagent)". The subagent runs in its own context window with Read(), Read(), Read(), Search(), List() calls. Returns a short result: "the file is in src/main/..." back to the parent agent*
 
-- **Subagents are not for role-playing** (frontend agent, backend agent). They are for **controlling context.**
-- A subagent runs in its own context window — it can read dozens of files and only return a short answer
+- **Subagents are not for role-playing** (frontend agent, backend agent, QA agent). They are for **controlling context.**
+- A subagent forks out a new context window that goes and does all the heavy reading, searching, and codebase understanding
+- It returns a really succinct message back to the parent agent — "the file you want is here"
+- The parent agent can read that one file and get straight to work
 - The parent agent's context stays clean
-- **Foreground**: blocks until done (for sequential tasks where you need the answer)
-- **Background**: works independently (for long-running tasks or parallel workstreams)
 
-**Example**: Ask the agent to research how authentication works in your codebase. Instead of the main agent reading 20 files (filling up context), it spawns a subagent that reads all 20 files and returns a 10-line summary.
+**Example**: Instead of the main agent reading 20 files to understand authentication (filling up context), it spawns a subagent that reads all 20 files and returns a 10-line summary.
 
 ### The `/summarize` Command
 
 - When a conversation gets long, use `/summarize` to compress the history
 - Keeps important context, drops the noise
-- Lets you keep working without starting over
+- Lets you keep working without starting over completely
 
 **Demo flow**:
 1. Show a conversation that's getting long
@@ -230,9 +195,9 @@ A good compaction is structured and specific:
 
 ---
 
-## Part 5 — The Research → Plan → Implement Workflow (15 min)
+## Part 4 — The Research → Plan → Implement Workflow (15 min)
 
-**Goal**: Teach the most effective workflow pattern for complex tasks. This is building your entire approach around staying in the smart zone.
+**Goal**: Teach the most effective workflow pattern for complex tasks. This builds on everything from Part 3 — it's frequent intentional compaction turned into a complete workflow. Your entire approach is built around staying in the smart zone.
 
 ### Frequent Intentional Compaction as a Workflow
 
@@ -247,7 +212,7 @@ A good compaction is structured and specific:
 - Use **Ask mode** (read-only) or a dedicated subagent
 - Explore the codebase: how does the current feature work? What files are involved? What patterns does the codebase use?
 - **Output**: A summary of findings — relevant files, code flow, architectural patterns
-- This phase can consume a lot of context (reading many files) — that's fine, because we'll compact it
+- This phase can consume a lot of context (reading many files) — that's fine, because we'll compact it before moving on
 
 ### Phase 2: Plan
 
@@ -255,9 +220,10 @@ A good compaction is structured and specific:
 
 - Use **Plan mode** (`Shift+Tab` to switch)
 - Take the research findings and create a detailed, step-by-step plan
-- Include: **file names, line numbers, code snippets**
-- Be explicit about testing steps
+- Include: **file names, line numbers, and actual code snippets** of what's going to change
+- Be explicit about testing steps after every change
 - The plan is a form of **compressed context** — it captures intent, relevant files, and approach in a small, reviewable document
+- A well-written plan should be so clear that even a simple model could follow it without screwing up
 
 **Plan mode workflow**:
 1. Agent asks clarifying questions to understand your requirements
@@ -277,6 +243,16 @@ Plans are saved by default in your home directory. Click "Save to workspace" to 
 - **Keep context under 40%** — if you're running over, break the implementation into smaller chunks
 - Each chunk: read the plan → implement that section → verify → move on
 
+### Don't Outsource the Thinking
+
+> **AI cannot replace thinking. It can only amplify the thinking you have done — or the lack of thinking you have done.**
+
+- There is no perfect prompt. There is no silver bullet.
+- This workflow only works if **you** read the research and **you** read the plan
+- A bad plan doesn't just produce a few bad lines of code — it sends the model off in the wrong direction entirely
+- You, the builder, need to be in back-and-forth with the agent, reading the plans as they're created
+- If you need peer review, send the plan to someone: "Does this look right? Is this the right approach?"
+
 ### The Hierarchy of Leverage
 
 > **SLIDE**: *Pyramid diagram from top to bottom:*
@@ -295,7 +271,7 @@ This is why the Research → Plan → Implement workflow matters:
 - A mistake in the **plan** (wrong solution) cascades into 10-100 lines
 - A mistake in **code** is just one line
 
-**Your effort should focus on the highest-leverage parts of the pipeline** — the rules, the research, and the plan. Don't outsource the thinking. The code is the cheapest thing to fix.
+**Your effort should focus on the highest-leverage parts of the pipeline** — the rules, the research, and the plan. The code is the cheapest thing to fix.
 
 ### When to Use Plan Mode vs Agent Mode
 
@@ -315,11 +291,11 @@ This is why the Research → Plan → Implement workflow matters:
 
 ---
 
-## Part 6 — Static Context: Teaching Cursor About Your Project (15 min)
+## Part 5 — Teaching Cursor About Your Project (15 min)
 
-**Goal**: Show how to give Cursor persistent knowledge about your codebase *before* you start a conversation. This is the "Core Infrastructure" layer from the Hierarchy of Leverage.
+**Goal**: Show how to give Cursor persistent knowledge about your codebase *before* you start a conversation. This is the "Core Infrastructure" layer from the Hierarchy of Leverage — the highest-leverage place to invest your effort.
 
-### 6a — Rules (Project, User, Team)
+### 5a — Rules (Project, User, Team)
 
 Rules provide persistent instructions that shape how the agent works with your code. They're included at the start of every model context — always-on guidance.
 
@@ -332,7 +308,7 @@ Rules provide persistent instructions that shape how the agent works with your c
 
 **Demo**: Show a `.cursor/rules/` folder with a few rules. Show how the agent's behavior changes with vs without them.
 
-### 6b — Progressive Disclosure Pattern
+### 5b — Progressive Disclosure Pattern
 
 - Don't dump everything into one giant rules file
 - Put general rules at the root, specific ones in subdirectories
@@ -349,7 +325,7 @@ Rules provide persistent instructions that shape how the agent works with your c
 
 This keeps context small and focused — directly tied to staying in the "smart zone."
 
-### 6c — Custom Commands
+### 5c — Custom Commands
 
 - Reusable workflows defined as markdown files in `.cursor/commands/`
 - Type `/` in chat to trigger them
@@ -367,7 +343,7 @@ This keeps context small and focused — directly tied to staying in the "smart 
 
 **Demo**: Show 2–3 example commands. Run `/review-code` or `/write-tests` to show the workflow.
 
-### 6d — Skills
+### 5d — Skills
 
 - Packaged domain-specific knowledge + scripts that agents can use on demand
 - Portable, version-controlled, executable
@@ -378,11 +354,11 @@ This keeps context small and focused — directly tied to staying in the "smart 
 
 ---
 
-## Part 7 — Dynamic Context: @ Mentions & Smart Referencing (10 min)
+## Part 6 — Dynamic Context & Extending Cursor (10 min)
 
-**Goal**: Show how to precisely control what goes into context during a conversation.
+**Goal**: Cover how to precisely control context during a conversation, plus the remaining powerful features — always tied back to context management.
 
-### Choosing What Goes Into Context
+### 6a — @ Mentions: Choosing What Goes Into Context
 
 | Mention | What it does | When to use |
 |---|---|---|
@@ -392,40 +368,21 @@ This keeps context small and focused — directly tied to staying in the "smart 
 | `@Branch` | Context about your current work | "Review my changes" or "What am I working on?" |
 | `@Past Chats` | Reference earlier conversations | When starting fresh but needing prior context |
 
-### Context Management Tips
-
-- **Large files/folders are automatically condensed** to fit within context limits
 - Use `@Code` over `@Files` when possible — more precise = less context waste
-- Drag files from the sidebar directly into Agent to add as context
-- Reference folders with `@Folders` then type `/` to navigate deeper
 
-**Demo**: Show how referencing a specific function with `@Code` vs an entire file makes a noticeable difference in response quality and context usage.
-
----
-
-## Part 8 — Extending Cursor (10 min)
-
-**Goal**: Cover the remaining powerful features, always tied back to context management.
-
-### 8a — MCP Servers
+### 6b — MCP Servers
 
 - MCP (Model Context Protocol) connects Cursor to external tools and data
 - Instead of explaining your project repeatedly, integrate directly
-- Supports: `stdio` (local), `SSE` (local/remote), `Streamable HTTP` (local/remote)
 - Examples: Figma MCP, database connections, internal documentation, CI/CD
+- **Remember the too-many-MCPs problem**: each MCP adds tool definitions to context. Only enable what you need.
 
-**Remember the too-many-MCPs problem**: each MCP adds tool definitions to context. Only enable what you need.
+### 6c — Checkpoints & Git Worktrees
 
-**Demo**: Show an MCP server connected in the demo project. Show the agent pulling external data without copy-pasting.
-
-### 8b — Checkpoints & Git Worktrees
-
-- **Checkpoints**: Automatic snapshots of the agent's changes. Use "Restore Checkpoint" to undo. Think of it as `Cmd+Z` for AI changes. Stored locally, separate from Git.
+- **Checkpoints**: Automatic snapshots of the agent's changes. Use "Restore Checkpoint" to undo. Think of it as `Cmd+Z` for AI changes.
 - **Git Worktrees**: Run multiple agents in parallel on different tasks, each in their own worktree. No branch-switching headaches.
 
-**Demo**: Make a change with the agent, restore a checkpoint.
-
-### 8c — Debug Mode
+### 6d — Debug Mode
 
 For tricky bugs that are hard to reproduce or understand:
 1. **Explore and hypothesize** — agent generates multiple hypotheses about root causes
@@ -435,32 +392,24 @@ For tricky bugs that are hard to reproduce or understand:
 5. **Make targeted fix** — focused fix based on runtime evidence
 6. **Verify and clean up** — re-run reproduction steps, remove instrumentation
 
-Best for: bugs you can reproduce but can't figure out, race conditions, performance problems, regressions.
+Uses runtime evidence, not guesses.
 
-### 8d — Test-Driven Development
+### 6e — Test-Driven Development
 
 - Write tests first (or describe what you want tested), let the agent implement until tests pass
 - The agent runs tests, reads failures, and iterates automatically
 - Tests act as a **verifiable goal** — one of the strongest ways to guide agent behavior
 
-**Demo**: Quick TDD cycle — describe a test, agent implements, tests pass.
-
-### 8e — Browser Integration
+### 6f — Browser Integration
 
 - Agent can control a web browser for testing, visual debugging, accessibility audits, design-to-code
 - Full access to console logs and network traffic
 - Screenshots integrated directly — agent *sees* the browser state as images
 - Works without installing external tools
 
-### 8f — Hooks
-
-- Observe, control, and extend the agent loop using custom scripts
-- Run before or after defined stages of the agent loop
-- Can observe, block, or modify behavior
-
 ---
 
-## Part 9 — The Bigger Picture & What's Next (10 min)
+## Part 7 — The Bigger Picture & What's Next (10 min)
 
 **Goal**: Zoom out. Now that the audience has the techniques, show the human side of AI adoption — the growing rift, why it exists, and why context engineering is the bridge. End with a forward-looking perspective.
 
@@ -469,7 +418,7 @@ Best for: bugs you can reproduce but can't figure out, race conditions, performa
 1. **Context is everything** — the quality of AI output is determined by the quality of what you put in
 2. **Stay in the smart zone** — keep context under ~40%. Start fresh conversations often.
 3. **Research → Plan → Implement** — this workflow keeps you in the smart zone across complex tasks
-4. **Don't outsource the thinking** — focus your effort on the highest-leverage parts: rules, research, and plans
+4. **Don't outsource the thinking** — AI amplifies your thinking, it doesn't replace it. Focus your effort on the highest-leverage parts: rules, research, and plans.
 5. **Use progressive disclosure** — layer rules from general to specific
 6. **Use subagents for context isolation** — let them do the heavy reading, keep your main context clean
 7. **Plan with a smart model, build with a fast one** — use `Cmd+/` to switch
@@ -504,7 +453,9 @@ Now that you understand context engineering, this rift makes perfect sense:
 - Senior+ engineers already know the patterns — AI doesn't fill a gap for them
 - They work in the biggest, most complex brownfield codebases — where AI struggles most without proper context
 - Without investing time to learn context engineering, AI genuinely doesn't help much
-- The key insight: **AI requires reps (practice) to become useful.** It's a skill, not a magic button.
+- The senior engineers end up hating it more every week because they're cleaning up slop shipped by Cursor the week before
+- This is not AI's fault. This is not the mid-level engineer's fault. It's a skills gap.
+- The key insight: **AI requires reps (practice) to become useful.** It's a skill, not a magic button. Pick one tool and get some reps.
 
 ### The Bridge
 
@@ -540,17 +491,15 @@ Now that you understand context engineering, this rift makes perfect sense:
 
 | Time | Section | Duration |
 |---|---|---|
-| 0:00 | Part 1 — The AI Adoption Problem (Greenfield vs Brownfield) | 10 min |
-| 0:10 | Part 2 — Quick Cursor Walkthrough | 10 min |
-| 0:20 | Part 3 — Why Context Is Everything | 15 min |
-| 0:35 | Part 4 — Context Management Strategies | 15 min |
-| 0:50 | Part 5 — Research → Plan → Implement Workflow | 15 min |
-| 1:05 | Part 6 — Static Context (Rules, Commands, Skills) | 15 min |
-| 1:20 | Part 7 — Dynamic Context (@ mentions) | 10 min |
-| 1:30 | Part 8 — Extending Cursor (MCP, Debug, TDD) | 10 min |
-| 1:40 | Part 9 — The Bigger Picture & What's Next | 10 min |
+| 0:00 | Part 1 — The Problem: Why AI Falls Apart on Real Codebases | 10 min |
+| 0:10 | Part 2 — Why Context Is Everything | 15 min |
+| 0:25 | Part 3 — Staying in the Smart Zone: Context Management Strategies | 15 min |
+| 0:40 | Part 4 — The Research → Plan → Implement Workflow | 15 min |
+| 0:55 | Part 5 — Teaching Cursor About Your Project (Rules, Commands, Skills) | 15 min |
+| 1:10 | Part 6 — Dynamic Context & Extending Cursor | 10 min |
+| 1:20 | Part 7 — The Bigger Picture & What's Next | 10 min |
 
-**Note**: Timeline adds to ~100 min. Trim Parts 7-8 demos as needed to keep at 90 min. These sections can be more "show and tell" than deep dives if time is tight.
+**Note**: Timeline adds to ~90 min. If running tight on time, trim Part 6 demos — those sections can be more "show and tell" than deep dives.
 
 ---
 
@@ -562,26 +511,26 @@ Quick reference for which slide/image goes where:
 |---|---|---|
 | Part 1 — Greenfield Illusion | Greenfield vs Brownfield comparison | *NEW SLIDE NEEDED* |
 | Part 1 — Why | "The bigger and more complex the codebase..." | *NEW SLIDE NEEDED* |
-| Part 2 — Agent Tools | Built-in tools list | `SCR-20260212-ksjm.png` |
-| Part 3 — Smart Zone | Context window zones diagram | `SCR-20260213-pbmm.png` |
-| Part 3 — Noise | "The more you use the context window..." | `SCR-20260213-pbdz.png` |
-| Part 3 — Too Many MCPs | MCP tools filling context | `SCR-20260213-pbvs.png` |
-| Part 4 — Naive Way | Work until context runs out | `SCR-20260213-oxdy.png` |
-| Part 4 — Start Over | Fresh context vs resteer | `SCR-20260213-oxqz.png` |
-| Part 4 — Compaction | Intentional compaction diagram | `SCR-20260213-oyfq.png` |
-| Part 4 — Good Compaction | Structured compaction example | `SCR-20260213-ozhq.png` |
-| Part 4 — Subagents | Managing context with subagents | `SCR-20260213-pctt.png` |
-| Part 5 — Hierarchy | Hierarchy of Leverage pyramid | `SCR-20260213-piqm.png` |
-| Part 5 — Workflow | Research → Plan → Implement | `SCR-20260213-pjll.png` |
-| Part 9 — Growing Rift | Love AI vs Hate AI graph | `SCR-20260213-pkgb.png` |
-| Part 9 — Junior/Mid-level | "fills in some skill gaps / produces some slop" | `SCR-20260213-pkdn.png` |
-| Part 9 — Senior+ | "without reps it doesn't make them that much faster" | `SCR-20260213-pkap.png` |
-| Part 9 — What's Next | "Coding Agents Will Be Commoditized" | `SCR-20260213-pjll.png` |
+| Part 2 — Smart Zone | Context window zones diagram | `SCR-20260213-pbmm.png` |
+| Part 2 — Noise | "The more you use the context window..." | `SCR-20260213-pbdz.png` |
+| Part 2 — Too Many MCPs | MCP tools filling context | `SCR-20260213-pbvs.png` |
+| Part 3 — Naive Way | Work until context runs out | `SCR-20260213-oxdy.png` |
+| Part 3 — Start Over | Fresh context vs resteer | `SCR-20260213-oxqz.png` |
+| Part 3 — Compaction | Intentional compaction diagram | `SCR-20260213-oyfq.png` |
+| Part 3 — Good Compaction | Structured compaction example | `SCR-20260213-ozhq.png` |
+| Part 3 — Subagents | Managing context with subagents | `SCR-20260213-pctt.png` |
+| Part 4 — Hierarchy | Hierarchy of Leverage pyramid | `SCR-20260213-piqm.png` |
+| Part 4 — Workflow | Research → Plan → Implement | `SCR-20260213-pjll.png` |
+| Part 7 — Growing Rift | Love AI vs Hate AI graph | `SCR-20260213-pkgb.png` |
+| Part 7 — Junior/Mid-level | "fills in some skill gaps / produces some slop" | `SCR-20260213-pkdn.png` |
+| Part 7 — Senior+ | "without reps it doesn't make them that much faster" | `SCR-20260213-pkap.png` |
+| Part 7 — What's Next | "Coding Agents Will Be Commoditized" | `SCR-20260213-pjll.png` |
 
 ---
 
 ## Notes for Presenter
 
+- **The flow mirrors a natural narrative arc**: Problem → Why it happens → How to fix it (strategies) → The complete workflow → Setting up your project → Tools & features → The bigger picture. Each part builds on the last.
 - **Start with the greenfield-vs-brownfield gap, not the rift.** This is the universal experience — everyone has felt it. It immediately builds credibility and frames the entire session as solving a real problem.
 - **The "smart zone" diagram is the anchor.** Keep coming back to it: *"This feature helps you stay in the smart zone because..."*
 - **The Hierarchy of Leverage is the second anchor.** When talking about rules, plans, or research, point back to the pyramid: *"This is why we spend time here — one bad line at this level cascades into thousands of bad lines of code."*

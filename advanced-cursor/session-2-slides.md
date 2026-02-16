@@ -14,6 +14,8 @@ But try using AI on a 500k-line codebase with 10 years of history, custom patter
 
 It uses the wrong patterns. It ignores your conventions. It doesn't know about the helper that already exists. It writes code that technically works but doesn't belong.
 
+You ship a lot more code, but a lot of it is reworking the slop from last week.
+
 ---
 
 ## The bigger and more complex the codebase, the worse AI performs — unless you know why.
@@ -42,69 +44,11 @@ Today: the mental model and techniques that close the gap between greenfield mag
 
 ---
 
-# Meet Cursor
-
----
-
-## Cursor: The AI Code Editor
-
-Cursor is a code editor built around AI. It has four modes, each designed for different tasks:
-
-- **Agent** — complex features, refactoring, multi-file edits. Full autonomy.
-- **Ask** — learning, planning, questions. Read-only, no changes.
-- **Plan** — complex features requiring planning. Creates detailed plans before execution.
-- **Debug** — tricky bugs and regressions. Uses runtime evidence, not guesses.
-
----
-
-## Key Shortcuts
-
-| Shortcut | What It Does |
-|---|---|
-| Cmd+I | Open Agent |
-| Cmd+L | Open Ask mode |
-| Shift+Tab | Switch agent modes |
-| Cmd+/ | Switch models |
-| Enter (while working) | Queue a message |
-| Cmd+Enter (while working) | Send immediately |
-
----
-
-## Agent Tools
-
-The agent has built-in tools it uses automatically:
-
-- Semantic search
-- Search files and folders
-- Web search
-- Read files
-- Edit files
-- Run shell commands
-- Browser control
-- Image generation
-- Ask questions
-
-The agent decides which tools to use based on your prompt and current context.
-
----
-
-## Models & Pricing
-
-Cursor supports all major AI models — Claude, GPT, Gemini, and more.
-
-- **Auto mode** — Cursor picks the best model and switches automatically if performance degrades
-- **Max Mode** — extends context window beyond 200k tokens (slower, more expensive)
-- Use Cmd+/ to switch models mid-conversation
-
-In our org: everyone gets Pro plan with $20 of agent usage + bonus credits.
-
----
-
 # Why Context Is Everything
 
 ---
 
-## LLMs Are Pure Functions
+## LLMs Are Stateless
 
 LLMs are like pure functions:
 
@@ -113,6 +57,8 @@ LLMs are like pure functions:
 Put good tokens in and you get better tokens out.
 
 They have no memory between conversations. Every response is only as good as what's in the context window.
+
+Every turn of the loop, the AI is picking the next action — and the only thing that influences what comes out is what's in the conversation so far.
 
 ---
 
@@ -153,6 +99,8 @@ MCP servers are powerful, but each one adds tool definitions to every conversati
 
 Too many MCP servers means your context window is already 40% full before you even type your first message.
 
+If you have too many MCPs, you are doing all your work in the dumb zone and you're never going to get good results.
+
 The fix: only enable the MCPs you actually need for the current task.
 
 ---
@@ -165,6 +113,16 @@ Four things to optimize for:
 2. **Completeness** — does it have everything it needs?
 3. **Size** — is it as small as possible while still complete?
 4. **Trajectory** — is the conversation heading in the right direction?
+
+---
+
+## Trajectory Matters
+
+If the AI did something wrong and you yelled at it, and it did something wrong again and you yelled at it again — the AI looks at this conversation and thinks: "the pattern here is I do something wrong, then the human yells."
+
+So the next most likely thing is to do something wrong again.
+
+Be mindful of your conversation trajectory. If it's going badly, starting fresh is better than correcting.
 
 ---
 
@@ -206,6 +164,8 @@ When you hear this, it's time to start over.
 
 Instead of fighting a confused conversation, start fresh with a targeted prompt.
 
+"Same task, but this time use XYZ approach — and don't go down that other path."
+
 Two context windows:
 - **Left**: accumulated conversation with wrong turns and corrections
 - **Right**: fresh context with "Make sure you use XYZ approach" in the first message
@@ -232,13 +192,13 @@ Use @Past Chats to carry forward what matters without dragging in the full histo
 
 ## Strategy 3: Intentional Compaction
 
-Before starting over, save your progress to a file.
+Whether you're on track or off track, compress your context into a file before starting over.
 
 1. Tell the AI: "Summarize everything we've done to progress.md"
 2. Include: the approach, steps completed, current problem, relevant files
 3. Start a new conversation: "Read progress.md and continue from where we left off"
 
-This is intentional compaction — manually compressing a long conversation into its essential information.
+The new agent gets straight to work instead of having to redo all the searching, file reading, and codebase understanding.
 
 ---
 
@@ -258,9 +218,10 @@ Things that fill your context window fast and should be compacted:
 
 A good compaction is structured and specific — like a well-written bug report:
 
+- **What we're working on**: exactly what the task is
+- **The exact files and line numbers** that matter to the problem
 - **What works**: known-good paths with specific file names and line numbers
 - **What's broken**: the specific failure with the exact code path
-- **Code references**: file paths and line numbers, not vague descriptions
 
 Precise enough that someone — or an AI — could pick it up and immediately start working.
 
@@ -272,9 +233,9 @@ Subagents are not for role-playing (frontend agent, backend agent).
 
 They are for controlling context.
 
-A subagent runs in its own context window. It can read dozens of files and only return a short answer. The parent agent's context stays clean.
+A subagent forks out a new context window that does all the heavy reading, searching, and codebase understanding. It returns a succinct message back to the parent: "the file you want is here."
 
-Example: instead of the main agent reading 20 files to understand authentication, it spawns a subagent that reads all 20 and returns a 10-line summary.
+The parent agent reads that one file and gets straight to work. Its context stays clean.
 
 ---
 
@@ -319,9 +280,10 @@ This phase consumes a lot of context. That's fine — we'll compact it before mo
 Outline the exact implementation steps.
 
 - Use Plan mode (Shift+Tab to switch)
-- Include file names, line numbers, and code snippets
-- Be explicit about testing steps
+- Include file names, line numbers, and actual code snippets of what's going to change
+- Be explicit about testing steps after every change
 - The plan itself is compressed context — intent, files, and approach in a small document
+- A well-written plan should be so clear that even a simple model could follow it without screwing up
 
 Plan mode workflow: agent asks clarifying questions → researches codebase → creates plan → you review and edit → click to build.
 
@@ -340,7 +302,16 @@ Each chunk: read the plan → implement that section → verify → move on.
 
 ---
 
-## Don't outsource the thinking. The code is the cheapest thing to fix.
+## Don't outsource the thinking. AI cannot replace thinking. It can only amplify the thinking you have done — or the lack of thinking you have done.
+
+---
+
+## There Is No Perfect Prompt
+
+- There is no silver bullet.
+- This workflow only works if you read the research and you read the plan.
+- A bad plan sends the model off in the wrong direction entirely.
+- You, the builder, need to be in back-and-forth with the agent as plans are created.
 
 ---
 
@@ -434,11 +405,11 @@ Agents discover skills automatically. You can also invoke them manually with / i
 
 ---
 
-# Controlling Context in Real Time
+# Dynamic Context & Extending Cursor
 
 ---
 
-## Dynamic Context: @ Mentions
+## @ Mentions
 
 Precisely control what goes into context during a conversation:
 
@@ -451,10 +422,6 @@ Precisely control what goes into context during a conversation:
 | @Past Chats | Reference earlier conversations |
 
 Use @Code over @Files when possible — more precise means less context waste.
-
----
-
-# Extending Cursor
 
 ---
 
@@ -520,7 +487,7 @@ Works without installing external tools.
 
 ---
 
-# Putting It All Together
+# The Bigger Picture
 
 ---
 
@@ -529,7 +496,7 @@ Works without installing external tools.
 1. **Context is everything** — AI output quality is determined by input quality
 2. **Stay in the smart zone** — keep context under ~40%, start fresh often
 3. **Research → Plan → Implement** — this workflow keeps you in the smart zone
-4. **Don't outsource the thinking** — focus on rules, research, and plans
+4. **Don't outsource the thinking** — AI amplifies your thinking, it doesn't replace it. Focus on rules, research, and plans.
 5. **Use progressive disclosure** — layer rules from general to specific
 6. **Use subagents for context isolation** — heavy reading in subagents, clean main context
 7. **Plan with a smart model, build with a fast one**
@@ -583,7 +550,9 @@ They already know the patterns. AI doesn't fill a gap for them.
 
 They work in the biggest, most complex brownfield codebases — where AI struggles most without proper context.
 
-The key insight: AI requires practice to become useful. It's a skill, not a magic button.
+The senior engineers end up hating it more every week because they're cleaning up slop shipped by Cursor the week before. This is not AI's fault. This is not the mid-level engineer's fault. It's a skills gap.
+
+The key insight: AI requires practice to become useful. It's a skill, not a magic button. Pick one tool and get some reps.
 
 ---
 
