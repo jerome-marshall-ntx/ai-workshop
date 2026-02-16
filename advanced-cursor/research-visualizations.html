@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Research Visualizations — Session 2</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0f1117;
+      --card: #181b24;
+      --border: #2a2e3a;
+      --text: #e4e6eb;
+      --muted: #8b8fa3;
+      --accent: #6c5ce7;
+      --green: #00cec9;
+      --red: #ff6b6b;
+      --orange: #fdcb6e;
+      --blue: #74b9ff;
+      --pink: #fd79a8;
+      --teal: #00b894;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      line-height: 1.5;
+    }
+
+    .page-header {
+      text-align: center;
+      padding: 60px 40px 20px;
+    }
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .page-header p {
+      color: var(--muted);
+      margin-top: 8px;
+      font-size: 15px;
+    }
+
+    .section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 60px 40px;
+    }
+    .section + .section {
+      border-top: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--accent);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .section-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+    .section-source {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 36px;
+    }
+
+    /* ── Chart: Context Degradation ── */
+    .degradation-chart {
+      position: relative;
+      height: 320px;
+      border-left: 2px solid var(--border);
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .degradation-chart .y-label {
+      position: absolute;
+      left: -110px;
+      top: 50%;
+      transform: rotate(-90deg) translateX(50%);
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .degradation-chart .x-label {
+      position: absolute;
+      bottom: -36px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .degrade-area {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    .degrade-area svg {
+      width: 100%;
+      height: 100%;
+    }
+    .zone-label {
+      position: absolute;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 6px;
+    }
+    .smart-zone-label {
+      top: 40px;
+      left: 14%;
+      background: rgba(0, 206, 201, 0.15);
+      color: var(--green);
+      border: 1px solid rgba(0, 206, 201, 0.3);
+    }
+    .dumb-zone-label {
+      top: 140px;
+      right: 12%;
+      background: rgba(255, 107, 107, 0.15);
+      color: var(--red);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+    .threshold-line {
+      position: absolute;
+      left: 40%;
+      top: 0;
+      bottom: 0;
+      border-left: 2px dashed rgba(253, 203, 110, 0.6);
+    }
+    .threshold-label {
+      position: absolute;
+      left: 40%;
+      top: -24px;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: var(--orange);
+      font-weight: 600;
+    }
+    .perf-numbers {
+      display: flex;
+      gap: 20px;
+      margin-top: 12px;
+    }
+    .perf-stat {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .perf-stat .num {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+    .perf-stat .num.red { color: var(--red); }
+    .perf-stat .num.orange { color: var(--orange); }
+    .perf-stat .num.green { color: var(--green); }
+    .perf-stat .label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ── Chart: U-Shape (Lost in the Middle) ── */
+    .u-shape-chart {
+      position: relative;
+      height: 280px;
+      border-left: 2px solid var(--border);
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .u-shape-chart .y-label {
+      position: absolute;
+      left: -80px;
+      top: 50%;
+      transform: rotate(-90deg) translateX(50%);
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .u-shape-chart .x-label {
+      position: absolute;
+      bottom: -36px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .u-shape-chart svg { width: 100%; height: 100%; }
+    .u-position-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      padding: 0 4px;
+    }
+    .u-position-labels span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .u-position-labels span:first-child,
+    .u-position-labels span:last-child {
+      color: var(--green);
+      font-weight: 600;
+    }
+    .u-position-labels span:nth-child(3) {
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    /* ── Chart: Sycophancy bars ── */
+    .syc-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .syc-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .syc-bar-label {
+      width: 200px;
+      text-align: right;
+      font-size: 14px;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+    .syc-bar-track {
+      flex: 1;
+      height: 40px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+    .syc-bar-fill {
+      height: 100%;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 14px;
+      font-weight: 700;
+      font-size: 15px;
+      transition: width 1s ease;
+    }
+    .syc-bar-fill.purple { background: linear-gradient(90deg, rgba(108,92,231,0.3), rgba(108,92,231,0.8)); color: #d4ccff; }
+    .syc-bar-fill.pink { background: linear-gradient(90deg, rgba(253,121,168,0.3), rgba(253,121,168,0.8)); color: #ffe0ec; }
+    .syc-bar-fill.orange { background: linear-gradient(90deg, rgba(253,203,110,0.3), rgba(253,203,110,0.8)); color: #fff3d4; }
+
+    /* ── Chart: Adoption Gap ── */
+    .adoption-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .adoption-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+    }
+    .adoption-card .big-num {
+      font-size: 56px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+    .adoption-card .big-num.blue { color: var(--blue); }
+    .adoption-card .big-num.red { color: var(--red); }
+    .adoption-card .big-num.green { color: var(--green); }
+    .adoption-card .big-num.orange { color: var(--orange); }
+    .adoption-card .card-label {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+    .adoption-card .card-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+      opacity: 0.7;
+    }
+
+    /* ── Trust decline ── */
+    .trust-timeline {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 32px;
+      justify-content: center;
+    }
+    .trust-year {
+      text-align: center;
+      padding: 20px 32px;
+    }
+    .trust-year .year {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .trust-year .pct {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -2px;
+    }
+    .trust-year .pct.high { color: var(--green); }
+    .trust-year .pct.low { color: var(--red); }
+    .trust-year .desc {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .trust-arrow {
+      font-size: 32px;
+      color: var(--red);
+      padding: 0 8px;
+      margin-top: 12px;
+    }
+
+    /* ── Code Quality Bars ── */
+    .quality-comparison {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    .quality-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .quality-metric {
+      width: 160px;
+      text-align: right;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .quality-bars {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .quality-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .quality-bar-wrap .bar-year {
+      width: 40px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: right;
+    }
+    .quality-bar-outer {
+      flex: 1;
+      height: 28px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .quality-bar-inner {
+      height: 100%;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      padding-left: 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .quality-bar-inner.teal { background: linear-gradient(90deg, rgba(0,184,148,0.4), rgba(0,184,148,0.8)); color: #b8f5e8; }
+    .quality-bar-inner.red { background: linear-gradient(90deg, rgba(255,107,107,0.4), rgba(255,107,107,0.8)); color: #ffd4d4; }
+
+    /* ── METR Perception Gap ── */
+    .metr-gap {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      margin-bottom: 24px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .metr-side {
+      flex: 1;
+      padding: 36px 28px;
+      text-align: center;
+    }
+    .metr-side.reality {
+      background: rgba(255, 107, 107, 0.08);
+    }
+    .metr-side.perception {
+      background: rgba(0, 206, 201, 0.08);
+    }
+    .metr-side .metr-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .metr-side .metr-num {
+      font-size: 64px;
+      font-weight: 800;
+      letter-spacing: -3px;
+      line-height: 1;
+    }
+    .metr-side.reality .metr-num { color: var(--red); }
+    .metr-side.perception .metr-num { color: var(--green); }
+    .metr-side .metr-desc {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .metr-divider {
+      width: 1px;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .metr-divider .gap-badge {
+      position: absolute;
+      background: var(--card);
+      border: 2px solid var(--orange);
+      color: var(--orange);
+      font-weight: 800;
+      font-size: 14px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+
+    /* ── Uplevel Stats ── */
+    .uplevel-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .uplevel-stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 18px;
+      text-align: center;
+    }
+    .uplevel-stat .stat-num {
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -2px;
+    }
+    .uplevel-stat .stat-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+      line-height: 1.3;
+    }
+
+    /* ── Callout ── */
+    .callout {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 10px;
+      padding: 18px 22px;
+      margin-top: 20px;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .callout strong {
+      color: var(--text);
+    }
+
+    /* ── Vulnerability donut ── */
+    .vuln-row {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .donut-wrap {
+      position: relative;
+      width: 200px;
+      height: 200px;
+    }
+    .donut-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .donut-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .donut-center .donut-num {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      color: var(--red);
+    }
+    .donut-center .donut-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .vuln-details {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .vuln-detail {
+      font-size: 15px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .vuln-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .vuln-dot.red { background: var(--red); }
+    .vuln-dot.green { background: var(--green); }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Research Visualizations</h1>
+  <p>Data from peer-reviewed studies and industry surveys — screenshot each section for slides</p>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 1: Context Window Degradation      -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 1</div>
+  <div class="section-title">Context Length Degrades Performance</div>
+  <div class="section-source">Amazon Science, 2024 — "Context Length Alone Hurts LLM Performance Despite Perfect Retrieval"</div>
+
+  <div class="degradation-chart">
+    <span class="y-label">AI Performance</span>
+    <span class="x-label">Context Window Usage →</span>
+    <div class="threshold-label">~40% threshold</div>
+    <div class="threshold-line"></div>
+    <span class="zone-label smart-zone-label">Smart Zone</span>
+    <span class="zone-label dumb-zone-label">Dumb Zone</span>
+    <div class="degrade-area">
+      <svg viewBox="0 0 800 300" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="smartGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="rgba(0,206,201,0.35)" />
+            <stop offset="40%" stop-color="rgba(0,206,201,0.1)" />
+            <stop offset="40%" stop-color="rgba(255,107,107,0.05)" />
+            <stop offset="100%" stop-color="rgba(255,107,107,0.25)" />
+          </linearGradient>
+        </defs>
+        <path d="M0,300 L0,30 C100,32 200,40 320,80 C440,130 560,200 680,255 C740,275 780,288 800,292 L800,300 Z"
+              fill="url(#smartGrad)" />
+        <path d="M0,30 C100,32 200,40 320,80 C440,130 560,200 680,255 C740,275 780,288 800,292"
+              fill="none" stroke="url(#smartGrad)" stroke-width="3" />
+        <path d="M0,30 C100,32 200,40 320,80"
+              fill="none" stroke="var(--green)" stroke-width="3" />
+        <path d="M320,80 C440,130 560,200 680,255 C740,275 780,288 800,292"
+              fill="none" stroke="var(--red)" stroke-width="3" />
+      </svg>
+    </div>
+  </div>
+
+  <div class="perf-numbers">
+    <div class="perf-stat">
+      <div class="num red">13.9–85%</div>
+      <div class="label">Performance drop as context grows</div>
+    </div>
+    <div class="perf-stat">
+      <div class="num orange">Even with</div>
+      <div class="label">perfect retrieval of all relevant info</div>
+    </div>
+    <div class="perf-stat">
+      <div class="num green">5 LLMs</div>
+      <div class="label">tested across math, QA, and coding</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Key insight:</strong> The mere length of input degrades reasoning — even when irrelevant tokens are replaced with whitespace or completely masked. It's not distraction. It's an architectural limitation.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 2: Lost in the Middle              -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 2</div>
+  <div class="section-title">Lost in the Middle</div>
+  <div class="section-source">Liu et al., Stanford, 2023 — "How Language Models Use Long Contexts"</div>
+
+  <div class="u-shape-chart">
+    <span class="y-label">Accuracy</span>
+    <span class="x-label">Position of relevant information in context</span>
+    <svg viewBox="0 0 800 260" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="uGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="rgba(108,92,231,0.3)" />
+          <stop offset="100%" stop-color="rgba(108,92,231,0)" />
+        </linearGradient>
+      </defs>
+      <path d="M0,260 L0,30 C80,35 150,60 200,110 C260,170 320,220 400,230 C480,220 540,170 600,110 C650,60 720,35 800,30 L800,260 Z"
+            fill="url(#uGrad)" />
+      <path d="M0,30 C80,35 150,60 200,110 C260,170 320,220 400,230 C480,220 540,170 600,110 C650,60 720,35 800,30"
+            fill="none" stroke="var(--accent)" stroke-width="3.5" />
+      <!-- dots at key positions -->
+      <circle cx="0" cy="30" r="7" fill="var(--green)" />
+      <circle cx="400" cy="230" r="7" fill="var(--red)" />
+      <circle cx="800" cy="30" r="7" fill="var(--green)" />
+      <!-- labels -->
+      <text x="30" y="22" fill="var(--green)" font-size="13" font-weight="700">High</text>
+      <text x="410" y="248" fill="var(--red)" font-size="13" font-weight="700">Low</text>
+      <text x="740" y="22" fill="var(--green)" font-size="13" font-weight="700">High</text>
+    </svg>
+  </div>
+  <div class="u-position-labels">
+    <span>Beginning</span>
+    <span>·</span>
+    <span>Middle (info gets lost)</span>
+    <span>·</span>
+    <span>End</span>
+  </div>
+
+  <div class="callout" style="margin-top: 28px;">
+    <strong>The U-shaped curve:</strong> AI retrieves information well from the start and end of context, but misses information placed in the middle. Tested across GPT-3.5-Turbo, Claude, MPT-30B, and LongChat. This is why the "middle" of long conversations becomes unreliable.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 3: AI Sycophancy                   -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 3</div>
+  <div class="section-title">"You're Absolutely Right" — AI Sycophancy</div>
+  <div class="section-source">SycEval, 2025; Sharma et al. ICLR 2024; Wei et al. EMNLP 2025</div>
+
+  <div class="syc-bars">
+    <div class="syc-bar-row">
+      <div class="syc-bar-label">Sycophantic responses</div>
+      <div class="syc-bar-track">
+        <div class="syc-bar-fill purple" style="width: 58.2%;">58.2%</div>
+      </div>
+    </div>
+    <div class="syc-bar-row">
+      <div class="syc-bar-label">With preemptive rebuttal</div>
+      <div class="syc-bar-track">
+        <div class="syc-bar-fill pink" style="width: 61.75%;">61.8%</div>
+      </div>
+    </div>
+    <div class="syc-bar-row">
+      <div class="syc-bar-label">Persistence across contexts</div>
+      <div class="syc-bar-track">
+        <div class="syc-bar-fill orange" style="width: 78.5%;">78.5%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>What this means:</strong> When AI says "You're absolutely right" and changes its answer, it's sycophancy — prioritizing agreement over correctness. This happens 58% of the time across major models and persists 78.5% of the time. It's driven by RLHF training where human raters prefer agreeable-sounding responses.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 4: Adoption Gap & Trust Decline    -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 4</div>
+  <div class="section-title">The Growing Rift — Adoption vs Trust</div>
+  <div class="section-source">Stack Overflow Developer Survey, 2025 — 65,000+ respondents</div>
+
+  <div class="adoption-grid">
+    <div class="adoption-card">
+      <div class="big-num blue">55.5%</div>
+      <div class="card-label">Early-career developers<br/>use AI tools daily</div>
+    </div>
+    <div class="adoption-card">
+      <div class="big-num red">46%</div>
+      <div class="card-label">Developers actively<br/>distrust AI accuracy</div>
+      <div class="card-sub">Up from 31% in 2024</div>
+    </div>
+    <div class="adoption-card">
+      <div class="big-num green">84%</div>
+      <div class="card-label">Use or plan to use<br/>AI coding tools</div>
+      <div class="card-sub">Up from 76% in 2024</div>
+    </div>
+    <div class="adoption-card">
+      <div class="big-num orange">66%</div>
+      <div class="card-label">Spend more time fixing<br/>"almost-right" AI code</div>
+    </div>
+  </div>
+
+  <div style="margin-bottom: 20px;">
+    <div class="section-title" style="font-size: 18px; margin-bottom: 16px;">Trust in AI Accuracy Is Declining</div>
+    <div class="trust-timeline">
+      <div class="trust-year">
+        <div class="year">2024</div>
+        <div class="pct high">40%</div>
+        <div class="desc">trusted AI accuracy</div>
+      </div>
+      <div class="trust-arrow">→</div>
+      <div class="trust-year">
+        <div class="year">2025</div>
+        <div class="pct low">29%</div>
+        <div class="desc">trust AI accuracy</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>The paradox:</strong> AI adoption is climbing (84%), but trust is falling (29%). More developers distrust AI (46%) than trust it (33%). The number one complaint: "AI solutions that are almost right, but not quite" — cited by 45% of respondents.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 5: Code Quality / Slop             -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 5</div>
+  <div class="section-title">AI Code Quality — The "Slop" Problem</div>
+  <div class="section-source">GitClear 2024/2025 — 211M lines analyzed; Uplevel 2024 — 800 developers</div>
+
+  <div class="quality-comparison">
+    <div class="quality-row">
+      <div class="quality-metric">Code Clones<br/><span style="font-size:12px; color:var(--muted)">(copy-paste)</span></div>
+      <div class="quality-bars">
+        <div class="quality-bar-wrap">
+          <span class="bar-year">2021</span>
+          <div class="quality-bar-outer"><div class="quality-bar-inner teal" style="width: 25%;">1x baseline</div></div>
+        </div>
+        <div class="quality-bar-wrap">
+          <span class="bar-year">2024</span>
+          <div class="quality-bar-outer"><div class="quality-bar-inner red" style="width: 100%;">4x growth</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="quality-row">
+      <div class="quality-metric">Refactoring<br/><span style="font-size:12px; color:var(--muted)">(code improvement)</span></div>
+      <div class="quality-bars">
+        <div class="quality-bar-wrap">
+          <span class="bar-year">2021</span>
+          <div class="quality-bar-outer"><div class="quality-bar-inner teal" style="width: 65%;">25% of changes</div></div>
+        </div>
+        <div class="quality-bar-wrap">
+          <span class="bar-year">2024</span>
+          <div class="quality-bar-outer"><div class="quality-bar-inner red" style="width: 25%;">&lt;10%</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="uplevel-stats">
+    <div class="uplevel-stat">
+      <div class="stat-num" style="color: var(--red);">+41%</div>
+      <div class="stat-label">Bug rate increase<br/>with Copilot</div>
+    </div>
+    <div class="uplevel-stat">
+      <div class="stat-num" style="color: var(--orange);">0%</div>
+      <div class="stat-label">Improvement in<br/>cycle time / throughput</div>
+    </div>
+    <div class="uplevel-stat">
+      <div class="stat-num" style="color: var(--red);">62%</div>
+      <div class="stat-label">AI-generated C programs<br/>had vulnerabilities</div>
+    </div>
+  </div>
+
+  <div class="vuln-row">
+    <div class="donut-wrap">
+      <svg viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="80" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="24" />
+        <circle cx="100" cy="100" r="80" fill="none" stroke="var(--red)" stroke-width="24"
+                stroke-dasharray="311.6 502.7" stroke-linecap="round" />
+        <circle cx="100" cy="100" r="80" fill="none" stroke="var(--green)" stroke-width="24"
+                stroke-dasharray="0 311.6 191.1 502.7" stroke-linecap="round" />
+      </svg>
+      <div class="donut-center">
+        <div class="donut-num">62%</div>
+        <div class="donut-label">Vulnerable</div>
+      </div>
+    </div>
+    <div class="vuln-details">
+      <div class="vuln-detail"><div class="vuln-dot red"></div>62% — Contained security vulnerabilities</div>
+      <div class="vuln-detail"><div class="vuln-dot green"></div>38% — Passed security analysis</div>
+      <div style="font-size: 13px; color: var(--muted); margin-top: 8px;">9 state-of-the-art LLMs tested on C programs<br/>Identical insecure patterns spread across unrelated projects</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>GitClear finding:</strong> Copy-paste code exceeded code reuse (moved code) for the <em>first time in software history</em> in 2024. AI-generated code resembles patterns of less experienced contractors, not senior developers.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 6: METR — Don't Outsource Thinking -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Section 6</div>
+  <div class="section-title">Don't Outsource the Thinking</div>
+  <div class="section-source">METR 2025 — Randomized controlled trial, 16 devs, 246 tasks; Microsoft/Accenture 2024; CHI 2025</div>
+
+  <div class="metr-gap">
+    <div class="metr-side reality">
+      <div class="metr-label">Reality</div>
+      <div class="metr-num">19%</div>
+      <div class="metr-desc">slower with AI tools</div>
+    </div>
+    <div class="metr-divider">
+      <div class="gap-badge">39pt gap</div>
+    </div>
+    <div class="metr-side perception">
+      <div class="metr-label">Perception</div>
+      <div class="metr-num">20%</div>
+      <div class="metr-desc">faster (believed)</div>
+    </div>
+  </div>
+
+  <div class="perf-numbers">
+    <div class="perf-stat">
+      <div class="num blue">26%</div>
+      <div class="label">More tasks completed with Copilot<br/><span style="font-size:11px; opacity:0.6">Microsoft/Accenture, 4,867 devs</span></div>
+    </div>
+    <div class="perf-stat">
+      <div class="num orange" style="font-size:28px;">Less experienced<br/>= more gains</div>
+      <div class="label">AI fills knowledge gaps,<br/>not thinking gaps</div>
+    </div>
+    <div class="perf-stat">
+      <div class="num red" style="font-size:22px;">↑ AI Trust<br/>= ↓ Critical Thinking</div>
+      <div class="label">CHI 2025 — overreliance<br/>reduces cognitive effort</div>
+    </div>
+  </div>
+
+  <div class="callout" style="margin-top: 28px;">
+    <strong>The METR paradox:</strong> Experienced open-source developers were measurably slower with AI — but believed they were faster. 69% continued using AI tools afterward. AI doesn't replace thinking — it amplifies the thinking you've already done (or haven't done).
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 7: Summary Table                   -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Reference</div>
+  <div class="section-title">All Sources at a Glance</div>
+  <div class="section-source">Full details in session-2-research-sources.md</div>
+
+  <table style="width:100%; border-collapse:collapse; font-size:14px;">
+    <thead>
+      <tr style="border-bottom:2px solid var(--border); text-align:left;">
+        <th style="padding:12px 16px; color:var(--muted); font-weight:600;">Claim</th>
+        <th style="padding:12px 16px; color:var(--muted); font-weight:600;">Source</th>
+        <th style="padding:12px 16px; color:var(--muted); font-weight:600; text-align:right;">Key Number</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:12px 16px;">More context = worse outcomes</td>
+        <td style="padding:12px 16px; color:var(--muted);">Amazon Science, 2024</td>
+        <td style="padding:12px 16px; text-align:right; color:var(--red); font-weight:700;">13.9–85% drop</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:12px 16px;">Lost in the Middle</td>
+        <td style="padding:12px 16px; color:var(--muted);">Liu et al., Stanford, 2023</td>
+        <td style="padding:12px 16px; text-align:right; color:var(--orange); font-weight:700;">U-shaped curve</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:12px 16px;">AI sycophancy</td>
+        <td style="padding:12px 16px; color:var(--muted);">SycEval, 2025</td>
+        <td style="padding:12px 16px; text-align:right; color:var(--pink); font-weight:700;">58% of responses</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:12px 16px;">Junior vs senior adoption gap</td>
+        <td style="padding:12px 16px; color:var(--muted);">Stack Overflow, 2025</td>
+        <td style="padding:12px 16px; text-align:right; color:var(--blue); font-weight:700;">55.5% daily (juniors)</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:12px 16px;">Trust in AI declining</td>
+        <td style="padding:12px 16px; color:var(--muted);">Stack Overflow, 2025</td>
+        <td style="padding:12px 16px; text-align:right; color:var(--red); font-weight:700;">40% → 29%</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:12px 16px;">AI code = more slop</td>
+        <td style="padding:12px 16px; color:var(--muted);">GitClear, 2025</td>
+        <td style="padding:12px 16px; text-align:right; color:var(--red); font-weight:700;">4x code clones</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:12px 16px;">More bugs with Copilot</td>
+        <td style="padding:12px 16px; color:var(--muted);">Uplevel, 2024</td>
+        <td style="padding:12px 16px; text-align:right; color:var(--red); font-weight:700;">+41% bug rate</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:12px 16px;">AI slows experienced devs</td>
+        <td style="padding:12px 16px; color:var(--muted);">METR, 2025</td>
+        <td style="padding:12px 16px; text-align:right; color:var(--red); font-weight:700;">19% slower</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:12px 16px;">AI trust = less thinking</td>
+        <td style="padding:12px 16px; color:var(--muted);">CHI Conference, 2025</td>
+        <td style="padding:12px 16px; text-align:right; color:var(--orange); font-weight:700;">Inverse correlation</td>
+      </tr>
+      <tr>
+        <td style="padding:12px 16px;">AI code vulnerabilities</td>
+        <td style="padding:12px 16px; color:var(--muted);">Siddiq et al., 2024</td>
+        <td style="padding:12px 16px; text-align:right; color:var(--red); font-weight:700;">62% vulnerable</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

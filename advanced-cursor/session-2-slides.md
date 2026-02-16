@@ -2,13 +2,55 @@
 
 ---
 
+# Cursor: The AI Code Editor
+
+Cursor is a code editor built around AI
+
+Four modes, each designed for different tasks:
+
+- **Agent** — Complex features, refactoring, multi-file edits. Full autonomy.
+- **Ask** — Learning, research, questions. Read-only, no changes.
+- **Plan** — Complex features requiring planning. Creates detailed plans before execution.
+- **Debug** — Tricky bugs and regressions. Uses runtime evidence, not guesses.
+
+---
+
+# Agent Tools
+
+---
+
+# Key Shortcuts
+
+| Shortcut | Action |
+|---|---|
+| Cmd + I | Open Agent |
+| Cmd + L | Open Ask mode |
+| Shift + Tab | Switch agent modes |
+| Cmd + / | Switch models |
+| Enter (while working) | Queue a message |
+| Cmd + Enter (while working) | Send immediately |
+
+---
+
+# Models & Pricing
+
+Cursor supports all major AI models — Claude, GPT, Gemini, and more.
+
+- **Auto mode** — Cursor picks the best model and switches automatically if performance degrades
+- **Max Mode** — extends context window beyond 200k tokens (slower, more expensive)
+- Switch models mid-conversation
+
+In our Org: Everyone gets Pro plan with $20 of agent usage + $10 bonus credits.
+
+---
+
 # The Problem
 
 ---
 
 ## The Greenfield Illusion
 
-AI coding tools are incredible on greenfield projects — build a todo app, a landing page, a new API from scratch, and it feels like magic.
+AI coding tools are incredible on greenfield projects — it feels like magic.
 
 But try using AI on a 500k-line codebase with 10 years of history, custom patterns, and undocumented conventions — and it falls apart.
 
@@ -16,9 +58,11 @@ It uses the wrong patterns. It ignores your conventions. It doesn't know about t
 
 You ship a lot more code, but a lot of it is reworking the slop from last week.
 
+*Source: GitClear 2025; Uplevel 2024*
+
 ---
 
-## The bigger and more complex the codebase, the worse AI performs — unless you know why.
+## The bigger and more complex the codebase, the worse AI performs
 
 ---
 
@@ -40,7 +84,91 @@ If AI only works on small new projects, it's a toy, not a tool.
 
 The engineers who figure out how to make AI work in real codebases will have a massive advantage.
 
-Today: the mental model and techniques that close the gap between greenfield magic and brownfield reality.
+---
+
+## Goals
+
+- AI works well in Brownfield codebases
+- Solved Complex Problems
+- No Slop
+- Mental Alignment
+
+---
+
+# The Naive Way
+
+Most people use AI this way: start a conversation, keep going until it breaks.
+
+When the agent goes wrong, you try to redirect it mid-conversation: "NO, do it the XYZ way."
+
+The problem: the context is now full of wrong turns, failed attempts, and noise.
+
+Resteering wastes context — the AI has to hold both the wrong approach AND your correction.
+
+---
+
+# Slightly Smarter
+
+## Start over vs Re-steer
+
+Instead of fighting a confused conversation, start fresh with a targeted prompt.
+
+"Same task, but this time use XYZ approach — and don't go down that other path."
+
+Starting fresh with a targeted prompt often gets better results than resteering.
+
+Use @Past Chats to carry forward what matters without dragging in the full history.
+
+*Source: Liu et al. "Lost in the Middle" 2023; correction-in-context research*
+
+---
+
+# How do you know its time to start over?
+
+---
+
+# "You're absolutely right."
+
+That's what AI tells you when it knows it's screwing up.
+
+It's agreeing to get you off its back.
+
+When you hear this, it's time to start over.
+
+*Source: SycEval 2025 — sycophancy occurs 58% of cases; Wei et al. EMNLP 2025*
+
+---
+
+# Smarter: Intentional Compaction
+
+Whether you're on track or off track, compress your context into a file before starting over.
+
+1. Tell the AI: "Summarize everything we've done to progress.md"
+2. Include: the approach, steps completed, current problem, relevant files
+3. Start a new conversation: "Read progress.md and continue from where we left off"
+
+The new agent gets straight to work instead of having to redo all the searching, file reading, and codebase understanding.
+
+---
+
+# A Good Compaction
+
+A good compaction is structured and specific — like a well-written bug report:
+
+- **What we're working on** — exactly what the task is
+- **The exact files and line numbers** that matter to the problem
+- **What works** — known-good paths with specific file names and line numbers
+- **What's broken** — the specific failure with the exact code path
+
+Precise enough that someone — or an AI — could pick it up and immediately start working.
+
+---
+
+# The /summarize Command
+
+When a conversation gets long, use /summarize to compress the history.
+
+Keeps important context, drops the noise. Lets you keep working without starting over completely.
 
 ---
 
@@ -62,16 +190,38 @@ Every turn of the loop, the AI is picking the next action — and the only thing
 
 ---
 
-## The Smart Zone vs The Dumb Zone
+## Optimize Your Context Window
 
-The context window has a fixed size — typically 200k tokens, about 15,000 lines of code.
+Four things to optimize for:
 
-As it fills up, AI quality degrades.
+1. **Correctness** — is the information accurate?
+2. **Completeness** — does it have everything it needs?
+3. **Size** — is it as small as possible while still complete?
+4. **Trajectory** — is the conversation heading in the right direction?
 
-- **The Smart Zone** — roughly the first 40% of context usage. AI performs well here.
-- **The Dumb Zone** — beyond 40%. AI starts missing things, contradicting itself, producing lower quality output.
+---
 
-Additional reserved space: 23k tokens for auto-compaction, 32k tokens for AI output.
+## Trajectory Matters
+
+If the AI did something wrong and you yelled at it, and it did something wrong again and you yelled at it again — the AI looks at this conversation and thinks:
+
+"the pattern here is I do something wrong, then the human yells."
+
+So the next most likely thing is to do something wrong again.
+
+Be mindful of your conversation trajectory. If it's going badly, starting fresh is better than correcting.
+
+*Source: Amazon Science 2024 — trajectory degrades with accumulated context*
+
+---
+
+## Context Problems, Ranked
+
+From worst to least bad:
+
+1. **Incorrect Information** — wrong context leads to confidently wrong code
+2. **Missing Information** — gaps lead to guesses and assumptions
+3. **Too Much Noise** — bloated context pushes you into the dumb zone
 
 ---
 
@@ -81,15 +231,21 @@ This is not a model problem. It's a context management problem.
 
 The same model that writes perfect code with focused context will produce slop with a bloated context window.
 
+*Source: Amazon Science 2024 — 13.9–85% performance drop as input length increases; Liu et al. "Lost in the Middle" 2023*
+
+---
+
+# The Dumb Zone
+
 ---
 
 ## What Fills Up Your Context
 
+- System instructions, rules, MCP tool definitions
 - File reads — every file the agent opens
 - Search results
 - Tool outputs — terminal commands, MCP responses
 - Conversation history — your messages + AI responses
-- System instructions, rules, MCP tool definitions
 
 ---
 
@@ -105,100 +261,22 @@ The fix: only enable the MCPs you actually need for the current task.
 
 ---
 
-## Optimize Your Context Window
+## The Smart Zone vs The Dumb Zone
 
-Four things to optimize for:
+The context window has a fixed size — typically 200k tokens, about 15,000 lines of code.
 
-1. **Correctness** — is the information accurate?
-2. **Completeness** — does it have everything it needs?
-3. **Size** — is it as small as possible while still complete?
-4. **Trajectory** — is the conversation heading in the right direction?
+As it fills up, AI quality degrades.
 
----
+- **The Smart Zone** — roughly the first 40% of context usage. AI performs well here.
+- **The Dumb Zone** — beyond 40%. AI starts missing things, contradicting itself, producing lower quality output.
 
-## Trajectory Matters
+Additional reserved space: 23k tokens for auto-compaction, 32k tokens for AI output.
 
-If the AI did something wrong and you yelled at it, and it did something wrong again and you yelled at it again — the AI looks at this conversation and thinks: "the pattern here is I do something wrong, then the human yells."
-
-So the next most likely thing is to do something wrong again.
-
-Be mindful of your conversation trajectory. If it's going badly, starting fresh is better than correcting.
-
----
-
-## Context Problems, Ranked
-
-From worst to least bad:
-
-1. **Incorrect Information** — wrong context leads to confidently wrong code
-2. **Missing Information** — gaps lead to guesses and assumptions
-3. **Too Much Noise** — bloated context pushes you into the dumb zone
+*Source: Amazon Science 2024; Liu et al. "Lost in the Middle" 2023; Hsieh et al. 2024*
 
 ---
 
 # Staying in the Smart Zone
-
----
-
-## Strategy 1: The Naive Way
-
-Most people use AI this way: start a conversation, keep going until it breaks.
-
-When the agent goes wrong, you try to redirect it mid-conversation: "NO, do it the XYZ way."
-
-The problem: the context is now full of wrong turns, failed attempts, and noise. Resteering wastes context — the AI has to hold both the wrong approach AND your correction.
-
----
-
-## "You're absolutely right."
-
-That's what AI tells you when it knows it's screwing up.
-
-It's agreeing to get you off its back.
-
-When you hear this, it's time to start over.
-
----
-
-## Strategy 2: Start Over vs Resteer
-
-Instead of fighting a confused conversation, start fresh with a targeted prompt.
-
-"Same task, but this time use XYZ approach — and don't go down that other path."
-
-Two context windows:
-- **Left**: accumulated conversation with wrong turns and corrections
-- **Right**: fresh context with "Make sure you use XYZ approach" in the first message
-
-Starting fresh with a targeted prompt often gets better results than resteering.
-
-Use @Past Chats to carry forward what matters without dragging in the full history.
-
----
-
-## When to Start Fresh vs Continue
-
-**Start fresh when:**
-- Switching tasks
-- Agent is confused or making the same mistakes
-- Finished a logical unit of work
-
-**Continue when:**
-- Iterating on the same feature
-- Debugging something it just built
-- Agent needs context from earlier
-
----
-
-## Strategy 3: Intentional Compaction
-
-Whether you're on track or off track, compress your context into a file before starting over.
-
-1. Tell the AI: "Summarize everything we've done to progress.md"
-2. Include: the approach, steps completed, current problem, relevant files
-3. Start a new conversation: "Read progress.md and continue from where we left off"
-
-The new agent gets straight to work instead of having to redo all the searching, file reading, and codebase understanding.
 
 ---
 
@@ -214,20 +292,7 @@ Things that fill your context window fast and should be compacted:
 
 ---
 
-## A Good Compaction
-
-A good compaction is structured and specific — like a well-written bug report:
-
-- **What we're working on**: exactly what the task is
-- **The exact files and line numbers** that matter to the problem
-- **What works**: known-good paths with specific file names and line numbers
-- **What's broken**: the specific failure with the exact code path
-
-Precise enough that someone — or an AI — could pick it up and immediately start working.
-
----
-
-## Strategy 4: Subagents for Context Isolation
+## Subagents for Context Isolation
 
 Subagents are not for role-playing (frontend agent, backend agent).
 
@@ -236,14 +301,6 @@ They are for controlling context.
 A subagent forks out a new context window that does all the heavy reading, searching, and codebase understanding. It returns a succinct message back to the parent: "the file you want is here."
 
 The parent agent reads that one file and gets straight to work. Its context stays clean.
-
----
-
-## The /summarize Command
-
-When a conversation gets long, use /summarize to compress the history.
-
-Keeps important context, drops the noise. Lets you keep working without starting over completely.
 
 ---
 
@@ -260,6 +317,8 @@ Build your entire workflow around context management. Three phases, each startin
 3. **Implement** — write the code
 
 Goal: always stay in the smart zone.
+
+*Source: arxiv.org/abs/2508.08322; arxiv.org/abs/2512.08769*
 
 ---
 
@@ -279,11 +338,11 @@ This phase consumes a lot of context. That's fine — we'll compact it before mo
 
 Outline the exact implementation steps.
 
-- Use Plan mode (Shift+Tab to switch)
-- Include file names, line numbers, and actual code snippets of what's going to change
-- Be explicit about testing steps after every change
-- The plan itself is compressed context — intent, files, and approach in a small document
-- A well-written plan should be so clear that even a simple model could follow it without screwing up
+1. Use Plan mode (Shift+Tab to switch)
+2. Include file names, line numbers, and actual code snippets of what's going to change
+3. Be explicit about testing steps after every change
+4. The plan itself is compressed context — intent, files, and approach in a small document
+5. A well-written plan should be so clear that even a simple model could follow it without screwing up
 
 Plan mode workflow: agent asks clarifying questions → researches codebase → creates plan → you review and edit → click to build.
 
@@ -302,16 +361,21 @@ Each chunk: read the plan → implement that section → verify → move on.
 
 ---
 
-## Don't outsource the thinking. AI cannot replace thinking. It can only amplify the thinking you have done — or the lack of thinking you have done.
+## Plan with a Smart Model, Build with a Fast One
+
+| Phase | Model Choice | Why |
+|---|---|---|
+| Research | Smart / expensive | Needs deep reasoning to understand the system |
+| Planning | Smart / expensive | Needs to make good architectural decisions |
+| Implementation | Fast / cheap | Following a well-defined plan is straightforward |
 
 ---
 
-## There Is No Perfect Prompt
+## Don't outsource the thinking.
 
-- There is no silver bullet.
-- This workflow only works if you read the research and you read the plan.
-- A bad plan sends the model off in the wrong direction entirely.
-- You, the builder, need to be in back-and-forth with the agent as plans are created.
+AI cannot replace thinking. It can only amplify the thinking you have done — or the lack of thinking you have done.
+
+*Source: METR 2025 — experienced devs 19% slower with AI; CHI 2025 — AI trust correlates with less critical thinking*
 
 ---
 
@@ -343,6 +407,8 @@ Your effort should focus on the highest-leverage parts of the pipeline.
 ---
 
 # Teaching Cursor About Your Project
+
+## Static and Dynamic Context
 
 ---
 
@@ -385,7 +451,6 @@ Great for standardizing team processes:
 - /review-code
 - /write-tests
 - /create-pr
-- /security-audit
 - /setup-new-feature
 
 Stored in .cursor/commands/ — version-controlled and shareable.
@@ -396,10 +461,10 @@ Stored in .cursor/commands/ — version-controlled and shareable.
 
 Packaged domain-specific knowledge and scripts that agents use on demand.
 
-- Portable — works across projects
-- Version-controlled — stored as files in your repo
-- Executable — includes scripts agents can run
-- Progressive — loads resources on demand, keeping context efficient
+- **Portable** — works across projects
+- **Version-controlled** — stored as files in your repo
+- **Executable** — includes scripts agents can run
+- **Progressive** — loads resources on demand, keeping context efficient
 
 Agents discover skills automatically. You can also invoke them manually with / in chat.
 
@@ -418,7 +483,7 @@ Precisely control what goes into context during a conversation:
 | @Files & Folders | Reference entire files or directories |
 | @Code | Reference specific code sections (more precise) |
 | @Docs | Pull in documentation |
-| @Branch | Context about your current work |
+| @Branch / @Commit | Context about your current work |
 | @Past Chats | Reference earlier conversations |
 
 Use @Code over @Files when possible — more precise means less context waste.
@@ -439,6 +504,10 @@ Remember: each MCP adds tool definitions to context. Only enable what you need.
 
 ---
 
+# More Features
+
+---
+
 ## Checkpoints & Git Worktrees
 
 **Checkpoints** — automatic snapshots of the agent's changes. Use "Restore Checkpoint" to undo. Think of it as Cmd+Z for AI changes.
@@ -447,35 +516,9 @@ Remember: each MCP adds tool definitions to context. Only enable what you need.
 
 ---
 
-## Debug Mode
-
-For tricky bugs that are hard to reproduce or understand:
-
-1. Explore and hypothesize — generates multiple theories about root causes
-2. Add instrumentation — adds log statements to a debug server
-3. Reproduce the bug — asks you to reproduce (keeps you in the loop)
-4. Analyze logs — reviews collected logs for the actual root cause
-5. Make targeted fix — focused fix based on runtime evidence
-6. Verify and clean up — re-run steps, remove instrumentation
-
-Uses runtime evidence, not guesses.
-
----
-
-## Test-Driven Development
-
-Write tests first, let the agent implement until tests pass.
-
-- The agent runs tests, reads failures, and iterates automatically
-- Tests act as a verifiable goal — one of the strongest ways to guide agent behavior
-- Describe what you want tested. The agent figures out the implementation.
-
----
-
 ## Browser Integration
 
 The agent can control a web browser:
-
 - Testing web applications
 - Visual debugging
 - Accessibility audits
@@ -487,11 +530,7 @@ Works without installing external tools.
 
 ---
 
-# The Bigger Picture
-
----
-
-## Key Takeaways
+# Key Takeaways
 
 1. **Context is everything** — AI output quality is determined by input quality
 2. **Stay in the smart zone** — keep context under ~40%, start fresh often
@@ -504,29 +543,18 @@ Works without installing external tools.
 
 ---
 
-## Plan with a Smart Model, Build with a Fast One
-
-| Phase | Model Choice | Why |
-|---|---|---|
-| Research | Smart / expensive | Needs deep reasoning to understand the system |
-| Planning | Smart / expensive | Needs to make good architectural decisions |
-| Implementation | Fast / cheap | Following a well-defined plan is straightforward |
-
-Use Cmd+/ to switch models between phases.
-
----
-
-## The Growing Rift
+# The Growing Rift
 
 Now that you understand context engineering, this makes perfect sense:
 
 There's a widening gap in how engineers feel about AI coding tools.
 
-Mid-level engineers are adopting AI rapidly — it fills knowledge gaps and speeds them up immediately.
-
-Senior and Staff engineers are slower to adopt, or actively resisting.
+- **Mid-level engineers** — adopting AI rapidly — it fills knowledge gaps and speeds them up immediately.
+- **Senior and Staff engineers** — slower to adopt, or actively resisting.
 
 Both sides are partly right.
+
+*Source: Stack Overflow 2025 — 55.5% juniors use AI daily vs seniors; 46% distrust AI accuracy*
 
 ---
 
@@ -538,7 +566,11 @@ It fills in some skill gaps.
 
 But it also produces some slop.
 
-Faster output, but not always better output. Without deep understanding, they accept more low-quality, subtly wrong code.
+Faster output, but not always better output.
+
+Without deep understanding, they accept more low-quality, subtly wrong code.
+
+*Source: Microsoft/Accenture 2024 — juniors gain more from Copilot; GitClear 2025 — AI code resembles less-experienced patterns*
 
 ---
 
@@ -553,6 +585,8 @@ They work in the biggest, most complex brownfield codebases — where AI struggl
 The senior engineers end up hating it more every week because they're cleaning up slop shipped by Cursor the week before. This is not AI's fault. This is not the mid-level engineer's fault. It's a skills gap.
 
 The key insight: AI requires practice to become useful. It's a skill, not a magic button. Pick one tool and get some reps.
+
+*Source: Uplevel 2024 — 41% more bugs, rework falls on seniors; METR 2025 — experienced devs slower with AI; Stack Overflow 2025*
 
 ---
 
@@ -580,17 +614,22 @@ The engineers and teams who figure out context engineering and workflow transfor
 
 ---
 
-## This isn't about using AI more. It's about using it better.
+## This isn't about using AI anymore.
+
+## It's about using it better.
 
 ---
 
-## Resources
+# References
 
-- Cursor Docs — Agent Best Practices: cursor.com/blog/agent-best-practices
-- Cursor Docs — Rules: cursor.com/docs/context/rules
-- Cursor Docs — MCP: cursor.com/docs/context/mcp
-- Cursor Docs — Subagents: cursor.com/docs/context/subagents
-- Cursor Docs — Plan Mode: cursor.com/docs/agent/modes#plan
-- Cursor Docs — Debug Mode: cursor.com/docs/agent/modes#debug
-- How I Use Cursor + Best Tips: builder.io/blog/cursor-tips
-- Common Agent Workflows: cursor.com/docs/cookbook/agent-workflows
+Full sources in `session-2-research-sources.md`. Key citations:
+
+| Claim | Source |
+|---|---|
+| Context degrades performance | Amazon Science 2024 · arxiv.org/abs/2510.05381 |
+| Lost in the Middle | Liu et al. 2023 · arxiv.org/abs/2307.03172 |
+| AI sycophancy | SycEval 2025 · arxiv.org/abs/2502.08177 |
+| Junior vs senior adoption | Stack Overflow 2025 · survey.stackoverflow.co/2025 |
+| AI code quality / slop | GitClear 2025; Uplevel 2024 |
+| Don't outsource thinking | METR 2025 · arxiv.org/abs/2507.09089 |
+| Research → Plan → Implement | arxiv.org/abs/2508.08322; arxiv.org/abs/2512.08769 |
