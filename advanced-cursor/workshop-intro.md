@@ -6,7 +6,7 @@
 
 # Welcome
 
-A half-day workshop designed to help engineers get significantly more out of AI tools — not just use them, but use them *well*.
+A half-day workshop designed to help engineers get significantly more out of AI tools — not just use them, but use them _well_.
 
 ---
 
@@ -14,10 +14,10 @@ A half-day workshop designed to help engineers get significantly more out of AI 
 
 Two sessions. One short break. About 3 hours total.
 
-| Session | Topic | Duration |
-|---|---|---|
-| **Session 1** | Foundations of AI for Engineers | ~1.5 hrs |
-| *Break* | | 15 min |
+| Session       | Topic                                | Duration |
+| ------------- | ------------------------------------ | -------- |
+| **Session 1** | Foundations of AI for Engineers      | ~1.5 hrs |
+| _Break_       |                                      | 15 min   |
 | **Session 2** | Advanced Cursor: Context Engineering | ~1.5 hrs |
 
 ---
@@ -56,18 +56,17 @@ We'll cover:
 # What This Workshop Is
 
 - A practical, opinionated guide to working with AI as an engineer
-- Built on real experience shipping code with AI in production codebases
-- Focused on *how to think* about AI, not just which buttons to click
+- Getting enough understanding about AI — not too deep, not too shallow
+- Exploring different capabilities of Cursor and how it makes using AI effective
 
 ---
 
 # What This Workshop Is Not
 
-- A sales pitch for any specific tool
+- An in-depth workshop on a particular topic
 - A "prompt engineering" course full of tricks
-- A beginner coding tutorial
 
-You already know how to code. We're here to help you code *better* with AI.
+You already know how to code. We're here to help you code _better_ with AI.
 
 ---
 
@@ -77,15 +76,6 @@ You already know how to code. We're here to help you code *better* with AI.
 - **Demos over slides** — we'll show real workflows, not just talk about them
 - **Opinionated** — we'll share what actually works, not try to cover everything
 - **Practical** — you should be able to apply what you learn tomorrow
-
----
-
-# Housekeeping
-
-- Workshop runs about **3 hours** total
-- Short **break between sessions** — stretch, grab coffee, check Slack
-- **Slides and materials** will be shared after the workshop
-- **Questions are welcome** throughout — raise your hand or drop them in chat
 
 ---
 

@@ -18,7 +18,7 @@ Section 5: Wrap-Up & Q&A (5 mins)
 
 ## Section 1: Setting the Stage (5 mins)
 
-*Before we touch any tools, let's understand the landscape.*
+_Before we touch any tools, let's understand the landscape._
 
 ### How Software Gets Built (2 mins)
 
@@ -28,37 +28,37 @@ Section 5: Wrap-Up & Q&A (5 mins)
 IDEA → DESIGN → BUILD → TEST → SHIP → MAINTAIN
 ```
 
-| Phase | What Happens | Who's Involved |
-|-------|--------------|----------------|
-| **Idea** | Define the problem, gather needs | Product, Stakeholders |
-| **Design** | Create mockups, user flows | Designers, UX |
-| **Build** | Write the actual code | Engineers |
-| **Test** | Find and fix bugs | QA, Engineers |
-| **Ship** | Release to users | DevOps, Engineers |
-| **Maintain** | Monitor, fix, improve | Everyone |
+| Phase        | What Happens                     | Who's Involved        |
+| ------------ | -------------------------------- | --------------------- |
+| **Idea**     | Define the problem, gather needs | Product, Stakeholders |
+| **Design**   | Create mockups, user flows       | Designers, UX         |
+| **Build**    | Write the actual code            | Engineers             |
+| **Test**     | Find and fix bugs                | QA, Engineers         |
+| **Ship**     | Release to users                 | DevOps, Engineers     |
+| **Maintain** | Monitor, fix, improve            | Everyone              |
 
-**Key insight:** There's often a gap between Design and Build. Mockups show *what it looks like*, but not *how it behaves*. This creates back-and-forth.
+**Key insight:** There's often a gap between Design and Build. Mockups show _what it looks like_, but not _how it behaves_. This creates back-and-forth.
 
 ---
 
 ### The Personal Software Era (2 mins)
 
-*Source: [Lee Robinson - Personal Software](https://leerob.com/personal-software)*
+_Source: [Lee Robinson - Personal Software](https://leerob.com/personal-software)_
 
 **The Irony of "Personal" Computing**
 
-Personal computers became mainstream in the 90s. But the software wasn't very *personal* at all. Operating systems and office suites were built for everyone — one-size-fits-all.
+Personal computers became mainstream in the 90s. But the software wasn't very _personal_ at all. Operating systems and office suites were built for everyone — one-size-fits-all.
 
 Want to do one small thing? You had to wade through hundreds of menus and features you didn't need.
 
 **AI Has Changed Everything**
 
-| Before | Now |
-|--------|-----|
-| Learn a programming language | Describe what you want |
-| Deal with complex tools | AI handles the complexity |
-| Figure out deployment | Just build and use it |
-| Software adapts to no one | Software adapts to YOU |
+| Before                       | Now                       |
+| ---------------------------- | ------------------------- |
+| Learn a programming language | Describe what you want    |
+| Deal with complex tools      | AI handles the complexity |
+| Figure out deployment        | Just build and use it     |
+| Software adapts to no one    | Software adapts to YOU    |
 
 **The "Home-Cooked Software" Mindset**
 
@@ -67,8 +67,9 @@ Want to do one small thing? You had to wade through hundreds of menus and featur
 **Example:** Lee wanted to track his baby's sleep and eating patterns. He didn't need user profiles, badges, or subscription tiers. So he built his own app — exactly what he needed, nothing more.
 
 **This is where we're headed:**
+
 - You won't search "best Chrome extension for X"
-- You'll just *build* what you need in 5 minutes
+- You'll just _build_ what you need in 5 minutes
 - Designers, marketers, product managers — anyone can create software
 
 **Today:** We learn to cook. 🍳
@@ -79,13 +80,14 @@ Want to do one small thing? You had to wade through hundreds of menus and featur
 
 Every website and web app is built with just **three technologies**:
 
-| Technology | What It Does | Think of it as... |
-|------------|--------------|-------------------|
-| **HTML** | Structure | The skeleton |
-| **CSS** | Styling | The skin and clothes |
-| **JavaScript** | Behavior | The brain and muscles |
+| Technology     | What It Does | Think of it as...     |
+| -------------- | ------------ | --------------------- |
+| **HTML**       | Structure    | The skeleton          |
+| **CSS**        | Styling      | The skin and clothes  |
+| **JavaScript** | Behavior     | The brain and muscles |
 
 **Example:**
+
 - HTML: "There's a button here"
 - CSS: "It's blue, rounded, has padding"
 - JavaScript: "When clicked, submit the form"
@@ -97,11 +99,13 @@ Every website and web app is built with just **three technologies**:
 ### What We're Doing Today (1 min)
 
 **We are NOT:**
+
 - ❌ Becoming software engineers
 - ❌ Building production-grade systems
 - ❌ Learning databases, servers, or deployment
 
 **We ARE:**
+
 - ✅ Learning to **cook our own software**
 - ✅ Building a fun game to understand the workflow
 - ✅ Creating a **personal tool** that solves a real problem for you
@@ -115,12 +119,14 @@ Every website and web app is built with just **three technologies**:
 ## Section 2: Introduction to Cursor (10 mins)
 
 ### The Story of Cursor (3 mins)
+
 - Born from VS Code - forked and rebuilt with AI-first philosophy
 - What is an IDE? A specialized environment where developers write, test, and debug code
 - The paradigm shift: From "learning to code" to "learning to instruct AI"
 - **Key message:** Personal software era - your imagination is the only limitation
 
 ### Cursor Interface Tour (7 mins)
+
 - Editor Panel, File Explorer, Agent Chat, Inline Chat
 - Plan Mode vs Agent Mode
 - Context Window (AI's working memory)
@@ -132,7 +138,7 @@ Every website and web app is built with just **three technologies**:
 
 ## Section 3: Live Demo - Space Invaders (15 mins)
 
-*Watch Cursor in action before we build together.*
+_Watch Cursor in action before we build together._
 
 Live demonstration following the video workflow:
 
@@ -146,6 +152,7 @@ Live demonstration following the video workflow:
 **See:** `demo-script/space-invaders-demo.md` for detailed script
 
 ### Key Takeaways:
+
 - **Plan first, then build** - Think before coding
 - **Iterate in small steps** - Build → Test → Improve
 - **New chat = fresh memory** - Be intentional about context
@@ -156,17 +163,20 @@ Live demonstration following the video workflow:
 ## Section 4: Hands-On Build - Design Token Finder Plugin (25 mins)
 
 ### Project Overview
+
 Build a Figma plugin that helps designers quickly search and copy design system tokens (colors, spacing, typography).
 
 ### Build Timeline:
 
 #### Phase 1: Plugin Setup (5 mins)
+
 1. Create `manifest.json` (plugin configuration)
 2. Create basic folder structure
 3. Load plugin in Figma Desktop
 4. Verify plugin appears in menu
 
 **Files to create:**
+
 - `manifest.json` - Plugin configuration
 - `ui.html` - The interface (HTML/CSS/JS)
 - `code.js` - Figma API communication
@@ -174,31 +184,38 @@ Build a Figma plugin that helps designers quickly search and copy design system 
 **See:** `design-token-finder/` folder for starter template
 
 #### Phase 2: Build the UI (15 mins)
+
 **Prompt for Cursor:**
-> "Create a Figma plugin UI (ui.html) for a Design Token Finder. 
-> Include: search bar, tabs for Colors/Spacing/Typography, 
+
+> "Create a Figma plugin UI (ui.html) for a Design Token Finder.
+> Include: search bar, tabs for Colors/Spacing/Typography,
 > token cards with name, value, preview, and copy button.
 > Use Figma's plugin UI styling. Make it look polished."
 
 **What AI will generate:**
+
 - HTML structure with tabs
 - CSS matching Figma's design language
 - JavaScript for search, filtering, copy functionality
 - Sample token data structure
 
 **Live coding with attendees:**
+
 - Walk through the generated code
 - Explain the structure (HTML/CSS/JS)
 - Show how search and filtering works
 - Test copy functionality
 
 #### Phase 3: Add Real Tokens (5 mins)
+
 Replace sample data with actual design system tokens:
+
 - Pull colors from your documentation
 - Add spacing scale values
 - Include typography tokens
 
 **Show how easy it is to expand:**
+
 - Add more tokens later
 - Add new categories
 - Customize styling
@@ -210,21 +227,25 @@ Replace sample data with actual design system tokens:
 ## Section 5: Wrap-Up and Q&A (5 mins)
 
 ### Recap
+
 - Cursor turns natural language into working code
 - Start with a plan, iterate in small steps
 - You just built a real Figma plugin!
 
 ### The "Personal Software" Mindset
+
 - You now have an AI engineer by your side
 - Identify friction in your workflow
 - Build tools that solve YOUR specific problems
 - Your design system + AI = custom tooling
 
 ### Challenge for Attendees
-> "This week, identify ONE repetitive task in your workflow. 
+
+> "This week, identify ONE repetitive task in your workflow.
 > Try building a small tool with Cursor to automate it."
 
 ### Resources
+
 - Cursor docs: cursor.com/docs
 - Figma Plugin API: figma.com/plugin-docs
 - Your plugin code: Take it home and expand it!
@@ -234,15 +255,18 @@ Replace sample data with actual design system tokens:
 ## Prerequisites Checklist
 
 **Required:**
+
 - [ ] Cursor IDE installed (cursor.com/download)
 - [ ] Figma Desktop app (required for plugin development)
 - [ ] Figma account (free tier works)
 
 **Nice to have:**
+
 - [ ] Design system documentation URL open
 - [ ] A few token values ready to input
 
 **Not required:**
+
 - Git knowledge
 - Node.js/npm
 - Prior coding experience
@@ -252,6 +276,7 @@ Replace sample data with actual design system tokens:
 ## Facilitator Prep Checklist
 
 ### Before the Workshop:
+
 1. **Test plugin loading**
    - Load `design-token-finder/manifest.json` in Figma Desktop
    - Verify plugin appears and runs
@@ -273,13 +298,16 @@ Replace sample data with actual design system tokens:
    - Same functionality, just opens in browser
 
 ### Common Issues to Anticipate:
+
 - **Figma Desktop required** - Web version doesn't support plugin development
 - **Plugin reload** - Must reload plugin after code changes
 - **File paths** - Ensure manifest.json path is correct when loading
 - **Copy permissions** - Browser may require user interaction for clipboard
 
 ### Backup Plan:
+
 If Figma plugin setup proves difficult:
+
 1. Switch to standalone HTML version (`backup-standalone/index.html`)
 2. Open in browser instead
 3. Same code, same functionality
@@ -302,6 +330,7 @@ All materials are in this repository:
 ## Success Metrics
 
 After this workshop, attendees should be able to:
+
 - ✅ Navigate Cursor's interface confidently
 - ✅ Use Plan mode to structure projects
 - ✅ Iterate on code using natural language
@@ -310,12 +339,5 @@ After this workshop, attendees should be able to:
 - ✅ Feel empowered to build personal tools
 
 ---
-
-## Next Steps for Attendees
-
-1. **This week:** Identify one workflow friction point
-2. **Try building:** A small tool to solve it
-3. **Share:** Show your team what you built
-4. **Expand:** Add features to your plugin
 
 Remember: Your imagination is the only limitation!
